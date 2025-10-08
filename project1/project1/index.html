@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invio Richiesta HTTP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="cont-bottoneinvio">
+        <p style="font-family: fantasy; font-size: x-large;">Clicca il bottone per inviare la richiesta HTTP</p>
+        <span style="font-family: fantasy; font-size: small;">(il bottone scomparirà dopo il primo click)</span><br>
+        <button id="bottoneinvio" onclick="eseguiRichiesta()">Invia Richiesta</button>
+    </div>
+
+    <div id="cont-contenuto">
+    </div>
+    <!-- Inserire form aggiunta -->
+    <div id="formmodifica">
+        <h2>Id:</h2>
+        <input type="text" id="id-form" disabled>
+        <h2>Modifica Nome</h2>
+        <input type="text" id="nome-form" placeholder="Inserisci il nome">
+
+        <!-- fare due metodi sottostanti -->
+        <button onclick="">Salva Modifica</button>
+        <button onclick="">Annulla</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
