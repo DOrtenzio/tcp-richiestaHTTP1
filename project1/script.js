@@ -2,9 +2,60 @@ let arrayIdPrivati=[];
 const salvati = sessionStorage.getItem("arrayIdPrivati"); //uso le sessioni perchè mi sono più comode
 if (salvati) {
     arrayIdPrivati = JSON.parse(salvati);
+}else {
+    sessionStorage.setItem("arrayIdPrivati",JSON.stringify(arrayIdPrivati))
 }
 
-function eseguiRichiesta() { //Metodo che riprende il codice di postman
+//funzioni utili 
+function aggiungiDato() {
+    const contDati = document.getElementById('contdati-form-add');
+    const nuovoDatoDiv = document.createElement('div');
+
+    const inputChiave = document.createElement('input');
+    inputChiave.type = 'text';
+    inputChiave.className = 'dati-form-add';
+    inputChiave.placeholder = 'Memoria';
+    inputChiave.required = true;
+
+    const inputValore = document.createElement('input');
+    inputValore.type = 'text';
+    inputValore.className = 'dati-form-add';
+    inputValore.placeholder = '128 GB';
+    inputValore.required = true;
+
+    const cancellazione = document.createElement('button');
+    cancellazione.textContent = 'X';
+    cancellazione.onclick = function(event) {
+        event.preventDefault(); 
+        contDati.removeChild(nuovoDatoDiv);
+    };
+
+    nuovoDatoDiv.appendChild(inputChiave);
+    nuovoDatoDiv.appendChild(inputValore);
+
+    contDati.appendChild(nuovoDatoDiv);
+}
+function ricarica(){
+    window.location.reload();
+    scrollTo(0,0);
+}
+    
+function modificaVistaFormAggiunta(isVisible){
+    document.getElementById('formaggiunta').style.visibility = isVisible ? 'visible' : 'hidden';
+}
+function mostraPopupErrore(messaggio) {
+    const popup = document.getElementById("popup-errore");
+    popup.innerText = messaggio;
+    popup.style.display = "block";
+    setTimeout(() => {
+        popup.style.display = "none";
+    }, 4000); // 4 sec
+}
+
+
+//funzioni che parlano con api
+//richiesta lista ogg
+function eseguiRichiesta() { 
     const requestOptions = {
         method: "GET",
         redirect: "follow"
@@ -15,17 +66,15 @@ function eseguiRichiesta() { //Metodo che riprende il codice di postman
     .then((result) => mostraContenuto(JSON.parse(result)))
     .catch((error) => console.error(error))
     .finally(()=>{ 
-        const bottone = document.getElementById("cont-bottoneinvio");
-        document.body.removeChild(bottone);
-        aggiungiTornaIndietro();
+        (document.getElementById("cont-titolo")).removeChild(document.getElementById("cont-bottone")); //tolgo bottoni
     });
 }
-
+//aggiunta ogg personale
 function eseguiAggiunta(stringaJsonAggiunta){
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    const raw = stringaJsonAggiunta; //stringa json che prevedo sia già convertita in json
+    const raw = stringaJsonAggiunta; 
 
     const requestOptions = {
     method: "POST",
@@ -37,16 +86,10 @@ function eseguiAggiunta(stringaJsonAggiunta){
     fetch("https://api.restful-api.dev/objects", requestOptions)
     .then((response) => {
         if (!response.ok){
-            const contenuto = document.getElementById("cont-contenuto");
-            contenuto.style.visibility = "visible";
-            contenuto.innerText = `Errore ${response.status}: Impossibile aggiungere l'oggetto.`;
-            setTimeout(() => { 
-                contenuto.innerText = ""; 
-                contenuto.style.visibility = "hidden"; 
-                window.location.reload();
-            }, 120000); //2 minuti
-            return;
+            mostraPopupErrore(`Errore ${response.status}: Impossibile aggiungere l'oggetto.`);
+            return response.text();
         }
+        return response.text();
     })
     .then((result) => {
         if(result != null){
@@ -58,7 +101,29 @@ function eseguiAggiunta(stringaJsonAggiunta){
     })
     .catch((error) => console.error(error));
 }
+//cancella ogg solo personale
+function rimuoviElemento(id){
+    const requestOptions = {
+    method: "DELETE",
+    redirect: "follow"
+    };
 
+    fetch("https://api.restful-api.dev/objects/"+id, requestOptions)
+    .then((response) => {
+        if (!response.ok){
+            mostraPopupErrore(`Errore ${response.status}: Impossibile rimuovere l'oggetto.`);
+            return response.text();
+        } else{
+            arrayIdPrivati = arrayIdPrivati.filter(ids => ids !== id);
+            sessionStorage.setItem("arrayIdPrivati", JSON.stringify(arrayIdPrivati)); 
+        }
+        return response.text();
+    })
+    .then((result) => ricarica())
+    .catch((error) => console.error(error));
+}
+
+//funzioni per grafica
 function mostraContenuto(result) { //result è un array di oggetti convertito prima
     const contenuto = document.getElementById("cont-contenuto");
     contenuto.style.visibility = "visible";
@@ -66,6 +131,9 @@ function mostraContenuto(result) { //result è un array di oggetti convertito pr
         contenuto.appendChild(new Oggetto(ogg.id, ogg.name, ogg.data).creaElementoGrafica());
     }  
     
+    const salvati = sessionStorage.getItem("arrayIdPrivati"); 
+    if (salvati) arrayIdPrivati = JSON.parse(salvati);
+
     if(arrayIdPrivati.length > 0){ 
         const requestOptions = {
             method: "GET",
@@ -74,30 +142,37 @@ function mostraContenuto(result) { //result è un array di oggetti convertito pr
 
         let stringaRichiesta="https://api.restful-api.dev/objects/";
         for(let idp of arrayIdPrivati){
-            stringaRichiesta+=`id=${idp}&`;
+            if(arrayIdPrivati.length===1) stringaRichiesta+=`${idp}`;
+            else stringaRichiesta+=`id=${idp}&`;
         }
         fetch(stringaRichiesta, requestOptions)
         .then((response) => response.text())
         .then((result) => {
-            const oggPriv = JSON.parse(result);
+            let oggPriv = JSON.parse(result);
+            if(!Array.isArray(oggPriv)) oggPriv = [oggPriv];
             for(let ogg of oggPriv){
-                contenuto.appendChild(new Oggetto(ogg.id, ogg.name, ogg.data).creaElementoGrafica());
+                contenuto.appendChild(new Oggetto(ogg.id, ogg.name, ogg.data).creaElementoModificaGrafica());
             }
         })
-        .catch((error) => console.error(error));
-    }
+        .catch((error) => console.error(error))
+        .finally(aggiungiTornaIndietro);
+    } else
+        aggiungiTornaIndietro();
 }
-
 function aggiungiTornaIndietro(){
     const bottone = document.createElement("button");
     bottone.id = "bottoneindietro";
     bottone.innerText = "Torna Indietro";
-    bottone.onclick = function() { window.location.reload(); };
+    bottone.onclick = function() { 
+        window.location.reload(); 
+        scrollTo(0,0);
+    };
 
     const contenuto = document.getElementById("cont-contenuto");
     contenuto.appendChild(bottone);
 }
 
+//classe
 class Oggetto {
     constructor(id, nome, data) {
         this.id = id;
@@ -135,8 +210,9 @@ class Oggetto {
 
             const formModifica = document.getElementById("formmodifica");
             formModifica.style.visibility = "visible";
-            document.getElementById("id-form").value = this.id;
-            document.getElementById("nome-form").value = this.nome;
+            formModifica.scrollIntoView();
+            document.getElementById("id-form-mod").value = this.id;
+            document.getElementById("nome-form-mod").value = this.nome;
             for (const [key, value] of Object.entries(this.data)){
                 const hString = document.createElement("h2");
                 hString.innerText = key;
@@ -149,7 +225,17 @@ class Oggetto {
                 formModifica.appendChild(inputString);
             }
          };
+        const bottoneCanc = document.createElement("button");
+        bottoneCanc.innerText = "X";
+        bottoneCanc.className = "bottone-cancella";
+        bottoneCanc.onclick = () => rimuoviElemento(this.id);
         elemento.appendChild(bottone);
+        elemento.appendChild(bottoneCanc);
         return elemento;
     }
 }
+
+
+
+
+

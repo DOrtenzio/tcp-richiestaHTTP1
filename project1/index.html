@@ -7,25 +7,66 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="cont-bottoneinvio">
+    <div id="cont-titolo">
         <p style="font-family: fantasy; font-size: x-large;">Clicca il bottone per inviare la richiesta HTTP</p>
         <span style="font-family: fantasy; font-size: small;">(il bottone scomparirà dopo il primo click)</span><br>
-        <button id="bottoneinvio" onclick="eseguiRichiesta()">Invia Richiesta</button>
+        <div id="cont-bottone">
+            <button onclick="eseguiRichiesta()">Invia Richiesta</button>
+            <button onclick="modificaVistaFormAggiunta(true)">Inserisci Nuovo Elemento</button>
+        </div>
     </div>
 
     <div id="cont-contenuto">
     </div>
-    <!-- Inserire form aggiunta -->
-    <div id="formmodifica">
+    <form id="formaggiunta" style="visibility: hidden;" onsubmit="formattaInJsonAggiuntaedInvia()">
         <h2>Id:</h2>
-        <input type="text" id="id-form" disabled>
+        <input type="text" id="id-form-add" placeholder="Verrà inserito a seguire" disabled readonly>
+        <h2>Inserisci il Nome</h2>
+        <input type="text" id="nome-form-add" placeholder="Inserisci il nome" required>
+        <h2>Inserisci i dati che vuoi</h2>
+        <div id="contdati-form-add">
+            <div>
+                <input type="text" class="dati-form-add" placeholder="Memoria" required>
+                <input type="text" class="dati-form-add" placeholder="128 GB" required>
+            </div>
+        </div>
+        <button onclick="aggiungiDato()">Aggiungi Dato</button>
+        <div>
+            <input type="submit" value="Invia" style="width:55%;">
+            <input type="reset" value="Annulla" onclick="ricarica()" style="width:35%;">
+        </div>
+    </form>
+    <form id="formmodifica" style="visibility: hidden;">
+        <h2>Id:</h2>
+        <input type="text" id="id-form-mod" disabled>
         <h2>Modifica Nome</h2>
-        <input type="text" id="nome-form" placeholder="Inserisci il nome">
+        <input type="text" id="nome-form-mod" placeholder="Inserisci il nome">
 
         <!-- fare due metodi sottostanti -->
         <button onclick="">Salva Modifica</button>
-        <button onclick="">Annulla</button>
-    </div>
+        <button onclick="ricarica()">Annulla</button>
+    </form>
+    <div id="popup-errore" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#ffdddd; color:#a94442; border:1px solid #a94442; border-radius:8px; padding:16px; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.15); font-size:16px;"></div>
     <script src="script.js"></script>
+    <script>
+        function formattaInJsonAggiuntaedInvia(){
+            event.preventDefault(); 
+            const nome = document.getElementById('nome-form-add').value;
+            const datiF = document.getElementsByClassName('dati-form-add');
+            const dati = {};
+
+            for (let i = 0; i < datiF.length; i += 2) { //scorro 2 per nome parametro e parametro
+                const chiave = datiF[i].value;
+                const valore = datiF[i + 1].value;
+                dati[chiave] = valore;
+            }
+
+            modificaVistaFormAggiunta(false);
+            eseguiAggiunta(JSON.stringify({
+                name: nome,
+                data: dati
+            }));
+        }
+    </script>
 </body>
 </html>

@@ -1,53 +1,84 @@
 .oggetto_restituito {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 10px;
-    border: 1px #000000;
-    border-radius: 5px;
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #4cafad;
+    border-radius: 8px;
     background-color: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(76, 175, 173, 0.08);
 }
 
 #cont-contenuto {
     width: 80%;
     margin: 20px auto;
-    padding: 10px;
-    border: 1px #ccc;
-    border-radius: 5px;
+    padding: 20px;
+    border: 1px solid #4cafad;
+    border-radius: 8px;
     background-color: #f0f0f0;
     min-height: 100px;
     visibility: hidden;
 }
 
-#cont-bottoneinvio {
+#cont-titolo {
     text-align: center;
     margin-top: 20px;
     visibility: visible;
 }
 
-button {
-    margin: 20px auto;
-    padding: 10px 20px;
+button, input[type="submit"],input[type="reset"],.bottone-cancella {
+    margin: 10px 5px;
+    padding: 10px 24px;
     font-size: 16px;
     border-radius: 5px;
     border: none;
-}
-
-#bottoneinvio {
     background-color: #4cafad;
     color: white;
+    cursor: pointer;
 }
 
-#bottoneinvio:hover {
+button:hover, input[type="submit"]:hover {
     background-color: #1c5b5a;
 }
 
-#bottoneindietro {
+#bottoneindietro, input[type="reset"], .bottone-cancella{
     background-color: #af6b4c;
     color: white;
 }
 
-#bottoneindietro:hover {
+#bottoneindietro:hover,input[type="reset"]:hover, .bottone-cancella:hover  {
     background-color: #ff5304;
+}
+
+form {
+    background: #fffbe6;
+    border: 1px solid #e0c97f;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 60%;
+    box-shadow: 0 2px 8px rgba(224, 201, 127, 0.08);
+}
+
+input[type="text"] {
+    padding: 8px;
+    margin: 8px 0;
+    border: 1px solid #4cafad;
+    border-radius: 4px;
+    width: 90%;
+    font-size: 15px;
+    background: #faffe0;
+}
+
+input[type="text"]:focus {
+    outline: 2px solid #4cafad;
+    background: #fff;
+}
+
+#contdati-form-add > div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
 body {
