@@ -10,6 +10,7 @@ if (salvati) {
 function aggiungiDato() {
     const contDati = document.getElementById('contdati-form-add');
     const nuovoDatoDiv = document.createElement('div');
+    nuovoDatoDiv.id = 'nuovo-dato-div';
 
     const inputChiave = document.createElement('input');
     inputChiave.type = 'text';
@@ -25,13 +26,16 @@ function aggiungiDato() {
 
     const cancellazione = document.createElement('button');
     cancellazione.textContent = 'X';
+    cancellazione.className = "bottone-cancella";
+    cancellazione.type = "button";
     cancellazione.onclick = function(event) {
-        event.preventDefault(); 
+        event.preventDefault();
         contDati.removeChild(nuovoDatoDiv);
     };
 
     nuovoDatoDiv.appendChild(inputChiave);
     nuovoDatoDiv.appendChild(inputValore);
+    nuovoDatoDiv.appendChild(cancellazione);
 
     contDati.appendChild(nuovoDatoDiv);
 }
@@ -66,7 +70,8 @@ function eseguiRichiesta() {
     .then((result) => mostraContenuto(JSON.parse(result)))
     .catch((error) => console.error(error))
     .finally(()=>{ 
-        (document.getElementById("cont-titolo")).removeChild(document.getElementById("cont-bottone")); //tolgo bottoni
+        if(document.getElementById("cont-bottone") != null)
+            (document.getElementById("cont-titolo")).removeChild(document.getElementById("cont-bottone"));
     });
 }
 //aggiunta ogg personale
@@ -119,7 +124,24 @@ function rimuoviElemento(id){
         }
         return response.text();
     })
-    .then((result) => ricarica())
+    .then((result) => eseguiRichiesta())
+    .catch((error) => console.error(error));
+}
+//modifica ogg solo personale
+function eseguiModifica(stringaJsonModifica, id){
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const requestOptions = {
+    method: "PUT",
+    headers: myHeaders,
+    body: stringaJsonModifica,
+    redirect: "follow"
+    };
+
+    fetch("https://api.restful-api.dev/objects/"+id, requestOptions)
+    .then((response) => response.text())
+    .then((result) => mostraContenuto(JSON.parse(result)))
     .catch((error) => console.error(error));
 }
 
@@ -127,6 +149,8 @@ function rimuoviElemento(id){
 function mostraContenuto(result) { //result è un array di oggetti convertito prima
     const contenuto = document.getElementById("cont-contenuto");
     contenuto.style.visibility = "visible";
+    contenuto.innerHTML = "";
+
     for( let ogg of result){
         contenuto.appendChild(new Oggetto(ogg.id, ogg.name, ogg.data).creaElementoGrafica());
     }  
@@ -140,11 +164,14 @@ function mostraContenuto(result) { //result è un array di oggetti convertito pr
             redirect: "follow"
         };
 
-        let stringaRichiesta="https://api.restful-api.dev/objects/";
+        let stringaRichiesta="https://api.restful-api.dev/objects";
+        if(arrayIdPrivati.length>1) stringaRichiesta+="?";
+        else stringaRichiesta+="/";
         for(let idp of arrayIdPrivati){
             if(arrayIdPrivati.length===1) stringaRichiesta+=`${idp}`;
             else stringaRichiesta+=`id=${idp}&`;
         }
+        if(stringaRichiesta.endsWith("&")) stringaRichiesta=stringaRichiesta.slice(0, -1);
         fetch(stringaRichiesta, requestOptions)
         .then((response) => response.text())
         .then((result) => {
@@ -204,28 +231,145 @@ class Oggetto {
         elemento.innerText = this.toString();
         const bottone = document.createElement("button");
         bottone.innerText = "Modifica";
-        bottone.onclick = function() { 
-            const contenuto = document.getElementById("cont-contenuto");
-            contenuto.style.visibility = "hidden";
+        bottone.onclick = ()=>{ 
+            elemento.innerText = "";
+            const formModifica = document.createElement("form");
+            formModifica.id = "form-modifica";
+            formModifica.eventPreventDefault=true;
+            formModifica.onsubmit =()=>{
+                const nome = document.getElementById("nome-form-mod").value;
+                const datiF = document.getElementsByClassName('dati-form-mod');
+                const dati = {};
 
-            const formModifica = document.getElementById("formmodifica");
-            formModifica.style.visibility = "visible";
-            formModifica.scrollIntoView();
-            document.getElementById("id-form-mod").value = this.id;
-            document.getElementById("nome-form-mod").value = this.nome;
+                for (let i = 0; i < datiF.length; i += 2) { 
+                    const chiave = datiF[i].value;
+                    const valore = datiF[i + 1].value;
+                    dati[chiave] = valore;
+                }
+
+                modificaVistaFormAggiunta(false);
+                eseguiModifica(JSON.stringify({
+                    name: nome,
+                    data: dati
+                }), this.id);
+            };
+
+            const idInput=document.createElement("input");
+            idInput.type="text";
+            idInput.id="id-form-mod";
+            idInput.value=this.id;
+            idInput.readOnly=true;
+
+            const nomeInput=document.createElement("input");
+            nomeInput.type="text";
+            nomeInput.id="nome-form-mod";
+            nomeInput.value=this.nome;
+            nomeInput.required=true;
+
+            formModifica.appendChild(idInput);
+            formModifica.appendChild(nomeInput);
+
+            const contDati = document.createElement('div');
+            contDati.id = 'contdati-form-mod';
+            formModifica.appendChild(contDati);
+
             for (const [key, value] of Object.entries(this.data)){
-                const hString = document.createElement("h2");
-                hString.innerText = key;
-                const inputString = document.createElement("input");
-                inputString.type = "text";
-                inputString.id = `form-${key}`;
-                inputString.placeholder = `Inserisci ${key}`;
-                inputString.value = value;
-                formModifica.appendChild(hString);
-                formModifica.appendChild(inputString);
+                const div=document.createElement("div");
+                div.style.display = "flex";
+                div.style.alignItems = "center";
+                div.style.width="95%";
+                div.style.gap = "8px";
+                
+                const dataInput=document.createElement("input");
+                dataInput.type="text";
+                dataInput.value=key;
+                dataInput.required=true;
+                dataInput.className='dati-form-mod';
+
+                const valDataInput=document.createElement("input");
+                valDataInput.type="text";
+                valDataInput.value=value;
+                valDataInput.required=true;
+                valDataInput.className='dati-form-mod';
+
+                const cancellazione = document.createElement('button');
+                cancellazione.textContent = 'X';
+                cancellazione.className = "bottone-cancella";
+                cancellazione.onclick = function(event) {
+                    event.preventDefault(); 
+                    contDati.removeChild(div);
+                };
+
+                div.appendChild(dataInput);
+                div.appendChild(document.createTextNode(" : "));
+                div.appendChild(valDataInput);
+                div.appendChild(cancellazione);
+                contDati.appendChild(div);
             }
+
+            const aggiungiDatoBtn = document.createElement("button");
+            aggiungiDatoBtn.innerText = "Aggiungi Dato";
+            aggiungiDatoBtn.style.width="95%";
+            aggiungiDatoBtn.type="button";
+            aggiungiDatoBtn.onclick=()=>{
+                const div=document.createElement("div");
+                div.style.display = "flex";
+                div.style.alignItems = "center";
+                div.style.width="95%";
+                div.style.gap = "8px";
+                
+                const dataInput=document.createElement("input");
+                dataInput.type="text";
+                dataInput.placeholder = 'Memoria';
+                dataInput.required=true;
+                dataInput.className='dati-form-mod';
+
+                const valDataInput=document.createElement("input");
+                valDataInput.type="text";
+                valDataInput.placeholder = '128 GB';
+                valDataInput.required=true;
+                valDataInput.className='dati-form-mod';
+
+                const cancellazione = document.createElement('button');
+                cancellazione.textContent = 'X';
+                cancellazione.className = "bottone-cancella";
+                cancellazione.onclick = function(event) {
+                    event.preventDefault(); 
+                    contDati.removeChild(div);
+                };
+
+                div.appendChild(dataInput);
+                div.appendChild(valDataInput);
+                div.appendChild(cancellazione);
+                contDati.appendChild(div);
+            };
+
+            const divButton=document.createElement("div");
+            divButton.style.display = "flex";
+            divButton.style.gap = "5%";
+
+            const inviaBtn=document.createElement("input");
+            inviaBtn.type="submit";
+            inviaBtn.style.width="55%";
+            inviaBtn.value="Salva";
+
+            const resetBtn=document.createElement("input");
+            resetBtn.type="reset";
+            resetBtn.style.width="35%";
+            resetBtn.value="Annulla";
+            resetBtn.onclick=()=>eseguiRichiesta();
+
+            divButton.appendChild(inviaBtn);
+            divButton.appendChild(resetBtn);
+
+            formModifica.appendChild(aggiungiDatoBtn);
+            formModifica.appendChild(divButton);
+
+            elemento.appendChild(formModifica);
+            formModifica.scrollIntoView();
          };
         const bottoneCanc = document.createElement("button");
+        bottoneCanc.type="button";
         bottoneCanc.innerText = "X";
         bottoneCanc.className = "bottone-cancella";
         bottoneCanc.onclick = () => rimuoviElemento(this.id);
