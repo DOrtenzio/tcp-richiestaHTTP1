@@ -12,7 +12,7 @@
         <span style="font-family: fantasy; font-size: small;">[ i bottoni scompariranno dopo un click ]</span><br>
         <div id="cont-bottone">
             <button onclick="eseguiRichiesta()">Invia Richiesta</button>
-            <br><span style="font-family: fantasy; font-size: medium;">Dopo aver inviato la richiesta, puoi aggiungere un nuovo elemento!</span><br>
+            <br><span style="font-family: fantasy; font-size: medium;">Oltre a vedere, puoi anche aggiungere un nuovo elemento ed in successione cancellarlo o modificarlo</span><br>
             <button onclick="modificaVistaFormAggiunta(true)">Inserisci Nuovo Elemento</button>
         </div>
     </div>
@@ -36,16 +36,6 @@
             <input type="submit" value="Invia" style="width:55%;">
             <input type="reset" value="Annulla" onclick="ricarica()" style="width:35%;">
         </div>
-    </form>
-    <form id="formmodifica" style="visibility: hidden;">
-        <h2>Id:</h2>
-        <input type="text" id="id-form-mod" disabled>
-        <h2>Modifica Nome</h2>
-        <input type="text" id="nome-form-mod" placeholder="Inserisci il nome">
-
-        <!-- fare due metodi sottostanti -->
-        <button onclick="">Salva Modifica</button>
-        <button onclick="ricarica()">Annulla</button>
     </form>
     <div id="popup-errore" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#ffdddd; color:#a94442; border:1px solid #a94442; border-radius:8px; padding:16px; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.15); font-size:16px;"></div>
     <script src="script.js"></script>
