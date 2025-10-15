@@ -1,0 +1,52 @@
+GET Lista utenti
+fetch('https://supreme-sniffle-g5x5g7g6p6w2p7wg-3000.app.github.dev/api/users', {
+  headers: {
+    'accept': '*/*'
+  }
+});
+
+POST Aggiunta
+fetch('https://supreme-sniffle-g5x5g7g6p6w2p7wg-3000.app.github.dev/api/users', {
+  method: 'POST',
+  headers: {
+    'accept': '*/*',
+    'Authorization': 'Bearer 5IDtoken',
+    'Content-Type': 'application/json'
+  },
+  // body: '{\n  "name": "string",\n  "age": 0\n}',
+  body: JSON.stringify({
+    'name': 'string',
+    'age': 0
+  })
+});
+
+GET Singolo Utente
+fetch('https://supreme-sniffle-g5x5g7g6p6w2p7wg-3000.app.github.dev/api/users/Utente%20Evoluto', {
+  headers: {
+    'accept': '*/*'
+  }
+});
+
+DELETE Cancella Uente
+fetch('https://supreme-sniffle-g5x5g7g6p6w2p7wg-3000.app.github.dev/api/users/Test', {
+  method: 'DELETE',
+  headers: {
+    'accept': '*/*',
+    'Authorization': 'Bearer 5IDtoken'
+  }
+});
+
+PUT Aggiorna dati utente
+fetch('https://supreme-sniffle-g5x5g7g6p6w2p7wg-3000.app.github.dev/api/users/Utente%20Evoluto', {
+  method: 'PUT',
+  headers: {
+    'accept': '*/*',
+    'Authorization': 'Bearer 5IDtoken',
+    'Content-Type': 'application/json'
+  },
+  // body: '{\n  "name": "string",\n  "age": 0\n}',
+  body: JSON.stringify({
+    'name': 'string',
+    'age': 0
+  })
+});
