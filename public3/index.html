@@ -114,29 +114,6 @@
         </script>
 
         <script>
-            function vista_aggiunta() {
-                const form = document.getElementById("vista_aggiunta");
-                form.style.display = form.style.display === "none" ? "flex" : "none";
-            }
-
-            function aggiungi() {
-                const nome = input.name.value;
-                const eta = input.eta.value;
-                if (nome && eta) {
-                    fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
-                        method: 'POST',
-                        headers: {
-                            'accept': '*/*',
-                            'Authorization': 'Bearer 5IDtoken',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            'name': nome, 
-                            'age': eta })
-                    });
-                }
-            }
-
             fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
                 headers: { 'accept': '*/*' }
             })
