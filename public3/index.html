@@ -38,6 +38,25 @@
                     <br>
                     <label for="name" class="form-label me-2">Età Utente:</label>
                     <input class="" type="text" placeholder="Inserisci l'età dell'utente" name="eta">
+                    <br>
+                    <br>
+                    <button class="btn btn-primary m-5" type="button" onclick="()=>{
+                        const form = document.getElementById('vista_aggiunta');
+                        const nomeinput=document.createElement('input');
+                        input.type = 'text';
+                        input.placeholder = 'Inserisci il nome del campo aggiuntivo';
+                        input.name = `campo-aggiuntivo`;
+                        input.className = 'valore-aggiuntivo';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.placeholder = 'Inserisci il valore del campo aggiuntivo';
+                        input.name = `campo-aggiuntivo`;
+                        input.className = 'valore-aggiuntivo';
+                        form.appendChild(nomeinput);
+                        form.appendChild(input);
+                        form.appendChild(document.createElement('br'));
+                        form.appendChild(document.createElement('br'));
+                    }">Aggiungi Altri Campi</button>
                     <button class="btn btn-primary m-5" type="button" onclick="aggiungi()">Inserisci</button>
                 </form>
                 <div class="row" id="contenitore" >
@@ -97,6 +116,13 @@
                 let nome=input.name.value;
                 let eta=input.eta.value;
                 if(nome && eta){
+                    let datiAggiuntivi={};
+                    for(let i=0;i<document.getElementsByClassName('valore-aggiuntivo').length;i+=2){
+                        let chiave=document.getElementsByClassName('valore-aggiuntivo')[i].value;
+                        let valore=document.getElementsByClassName('valore-aggiuntivo')[i+1].value;
+                        datiAggiuntivi[chiave]=valore;
+                    }
+
                     fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
                         method: 'POST',
                         headers: {
@@ -106,9 +132,37 @@
                         },
                         body: JSON.stringify({
                             'name': nome,
-                            'age': eta
+                            'age': eta,
+                            datiAggiuntivi
                         })
-                    });
+                    })
+                    .then(response=>{
+                        if(!response.ok) throw new Error("Errore nella risposta");
+                        //salvo location passata utente
+                        salvaLocazione(response.headers.get('location'));
+                        return response.json();
+                    }).catch(error=>console.error('Errore:', error));
+                } else {
+                    alert("Nome ed età sono obbligatori");
+                }
+            }
+
+            function salvaLocazione(location){
+                if(sessionStorage.getItem('locations')){
+                    let locations=JSON.parse(sessionStorage.getItem('locations'));
+                    locations.push(location);
+                    sessionStorage.setItem('locations',JSON.stringify(locations));
+                } else {
+                    let locations=[location];
+                    sessionStorage.setItem('locations',JSON.stringify(locations));
+                }
+            }
+
+            function ottieniLocazioni(){
+                if(sessionStorage.getItem('locations')){
+                    return JSON.parse(sessionStorage.getItem('locations'));
+                } else {
+                    return [];
                 }
             }
         </script>
@@ -123,42 +177,72 @@
             })
             .then(data => {
                 data.forEach(user => {
-                    const fragment = document.getElementById("template").content.cloneNode(true);
-                    const cloneCard = fragment.querySelector('.card'); 
+                    if(ottieniLocazioni().length>0){
+                        setInterval(() => {
+                            const locazioni=ottieniLocazioni();
+                            for(const locazione of locazioni){
+                                let utenteDaAggiungere=locazione.split('/').pop();
+                                const carta=document.querySelector(`[data-user="${utenteDaAggiungere}"]`);
+                                fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
+                                    headers: { 'accept': '*/*' }
+                                })
+                                .then(response => {
+                                    if (!response.ok) throw new Error("Errore nella risposta");
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    const contenitore = document.querySelector(`.card[data-user="${data.name}"]`);
+                                    contenitore.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
+                                    contenitore.querySelector(".card-text").textContent = `Età: ${user.age}`;
 
-                    cloneCard.querySelector(".card-title").textContent = user.name;
-                    cloneCard.dataset.user = user.name;
+                                    contenitore.classList.add('border-warning');
+                                })
+                                .catch(error => console.error('Errore:', error));
 
-                    cloneCard.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
-                    cloneCard.querySelector(".card-text").textContent = `Età: ${user.age}`;
+                            }
+                        }, 2000);
+                    } else{
+                        const fragment = document.getElementById("template").content.cloneNode(true);
+                        const cloneCard = fragment.querySelector('.card'); 
 
-                    if (user.data) {
-                        let testo = "";
-                        for (const [chiave, valore] of Object.entries(user.data)) {
-                            testo += `<p>${chiave}:</p> ${valore}<br>`;
+                        cloneCard.querySelector(".card-title").textContent = user.name;
+                        cloneCard.dataset.user = user.name;
+
+                        cloneCard.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
+                        cloneCard.querySelector(".card-text").textContent = `Età: ${user.age}`;
+
+                        if (Object.keys(data).length>2) {
+                            for(const attributo of Object.keys(data)){
+                                if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
+                                    let testo = "";
+                                    for (const [chiave, valore] of Object.entries(data[attributo])) {
+                                        testo += `<p>${chiave}:</p> ${valore}<br>`;
+                                    }
+                                    cloneCard.querySelector(".card-text-2").innerHTML = testo;
+                                }
+                            }
                         }
-                        cloneCard.querySelector(".card-text-2").innerHTML = testo;
+
+                        const btnElimina = document.createElement("button");
+                        btnElimina.className = "btn btn-danger me-2";
+                        btnElimina.textContent = "Elimina Utente";
+                        btnElimina.onclick = () => eliminautente(user.name);
+                        cloneCard.querySelector(".card-footer").appendChild(btnElimina);
+
+                        const btnModifica = document.createElement("button");
+                        btnModifica.className = "btn btn-secondary me-2";
+                        btnModifica.textContent = "Modifica Utente";
+                        btnModifica.onclick = () => modificautente(user,cloneCard);
+                        cloneCard.querySelector(".card-footer").appendChild(btnModifica);
+
+                        const btnDettagli = document.createElement("button");
+                        btnDettagli.className = "btn btn-info";
+                        btnDettagli.textContent = "Dettagli Utente";
+                        btnDettagli.onclick = () => dettagliutente(user.name);
+                        cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
+
+                        document.getElementById("contenitore").appendChild(fragment);
                     }
-
-                    const btnElimina = document.createElement("button");
-                    btnElimina.className = "btn btn-danger me-2";
-                    btnElimina.textContent = "Elimina Utente";
-                    btnElimina.onclick = () => eliminautente(user.name);
-                    cloneCard.querySelector(".card-footer").appendChild(btnElimina);
-
-                    const btnModifica = document.createElement("button");
-                    btnModifica.className = "btn btn-secondary me-2";
-                    btnModifica.textContent = "Modifica Utente";
-                    btnModifica.onclick = () => modificautente(user,cloneCard);
-                    cloneCard.querySelector(".card-footer").appendChild(btnModifica);
-
-                    const btnDettagli = document.createElement("button");
-                    btnDettagli.className = "btn btn-info";
-                    btnDettagli.textContent = "Dettagli Utente";
-                    btnDettagli.onclick = () => dettagliutente(user.name);
-                    cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
-
-                    document.getElementById("contenitore").appendChild(fragment);
                 });
             })
             .catch(error => console.error('Errore:', error));
@@ -173,14 +257,19 @@
                 })
                 .then(data => {
                     const contenitore = document.querySelector(`.card[data-user="${data.name}"]`);
-                    contenitore.querySelector(".card-subtitle").textContent = data.role ? `Ruolo: ${data.role}` : "Ruolo: Non Presente";
+                    contenitore.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
+                    contenitore.querySelector(".card-text").textContent = `Età: ${user.age}`;
 
-                    if (data.data) {
-                        let testo = "";
-                        for (const [chiave, valore] of Object.entries(data.data)) {
-                            testo += `<p>${chiave}:</p> ${valore}<br>`;
+                    if (Object.keys(data).length>2) {
+                        for(const attributo of Object.keys(data)){
+                            if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
+                                let testo = "";
+                                for (const [chiave, valore] of Object.entries(data[attributo])) {
+                                    testo += `<p>${chiave}:</p> ${valore}<br>`;
+                                }
+                                contenitore.querySelector(".card-text-2").innerHTML = testo;
+                            }
                         }
-                        contenitore.querySelector(".card-text-2").innerHTML = testo;
                     }
 
                     const btnDettagli = contenitore.querySelector(".btn.btn-info");
@@ -212,29 +301,31 @@
                 form.querySelector(".template-name").value = utente.name;
                 form.querySelector(".template-eta").value = utente.age;
 
-                if(utente.role){
-                    const labelRole = document.createElement("label");
-                    labelRole.className = "form-label me-2";
-                    labelRole.textContent = "Ruolo Utente:";
-                    form.appendChild(labelRole);
-                    const inputRole = document.createElement("input");
-                    inputRole.type = "text";
-                    inputRole.value = utente.role;
-                    inputRole.name = "role-modifica";
-                    form.appendChild(inputRole);
-                }
-
-                if(utente.data){
-                    for (const [chiave, valore] of Object.entries(utente.data)) {
-                        const labelData = document.createElement("label");
-                        labelData.className = "form-label me-2";
-                        labelData.textContent = `${chiave}:`;
-                        form.appendChild(labelData);
-                        const inputData = document.createElement("input");
-                        inputData.type = "text";
-                        inputData.value = valore;
-                        inputData.name = `data-${chiave}-modifica`;
-                        form.appendChild(inputData);
+                if(Object.keys(utente).length>2){
+                    for(const attributo of Object.keys(utente)){
+                        if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
+                            for (const [chiave, valore] of Object.entries(utente[attributo])) {
+                                const labelData = document.createElement("label");
+                                labelData.className = "form-label me-2";
+                                labelData.textContent = `${chiave}:`;
+                                form.appendChild(labelData);
+                                const inputData = document.createElement("input");
+                                inputData.type = "text";
+                                inputData.value = valore;
+                                inputData.name = `data-${chiave}-modifica`;
+                                form.appendChild(inputData);
+                            }
+                        } else if(attributo==="role"){
+                            const labelRole = document.createElement("label");
+                            labelRole.className = "form-label me-2";
+                            labelRole.textContent = "Ruolo Utente:";
+                            form.appendChild(labelRole);
+                            const inputRole = document.createElement("input");
+                            inputRole.type = "text";
+                            inputRole.value = utente.role;
+                            inputRole.name = "role-modifica";
+                            form.appendChild(inputRole);
+                        }
                     }
                 }
 
@@ -251,18 +342,20 @@
                     bodyuno.name=nameVal;
                     bodyuno.age=ageVal;
 
-                    if(utente.role){
-                        const roleVal = formApp.querySelector('input[name="role-modifica"]').value.trim();
-                        bodyuno.role=roleVal;
-                    }
-
-                    if(utente.data){
-                        const dataObj = {};
-                        for (const chiave of Object.keys(utente.data)) {
-                            const dataVal = formApp.querySelector(`input[name="data-${chiave}-modifica"]`).value.trim();
-                            dataObj[chiave] = dataVal;
+                    if(Object.keys(utente).length>2){
+                        for(const attributo of Object.keys(utente)){
+                            if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
+                                for (const [chiave, valore] of Object.entries(utente[attributo])) {
+                                    const dataObj = {};
+                                    const dataVal = formApp.querySelector(`input[name="data-${chiave}-modifica"]`).value.trim();
+                                    dataObj[chiave] = dataVal;
+                                    bodyuno.data = dataObj;
+                                }
+                            } else if(attributo==="role"){
+                                const roleVal = formApp.querySelector('input[name="role-modifica"]').value.trim();
+                                bodyuno.role=roleVal;
+                            }
                         }
-                        bodyuno.data = dataObj;
                     }
 
                     fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${utente.name}`, {
@@ -276,6 +369,7 @@
                     })
                     .then(resp => {
                         if (!resp.ok) throw new Error('Errore nella modifica');
+                        salvaLocazione(resp.headers.get('location'));
                         return resp.json();
                     })
                     .then(()=> location.reload())
