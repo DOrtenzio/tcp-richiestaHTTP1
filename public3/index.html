@@ -29,35 +29,98 @@
                     <h1 class="text-center my-3">Elenco Utenti</h1>
                     <div id="barra-pulsanti" class="p-3">
                         <button class="btn btn-success mx-3" onclick="vista_aggiunta()">Aggiungi Utente</button>
+                        <script>
+                            function vista_aggiunta(){
+                                const form = document.getElementById("vista_aggiunta");
+                                form.style.display = form.style.display === "none" ? "flex" : "none";
+                            }
+                        </script>
                     </div>
                 </div>
                 <form id="vista_aggiunta" class="flex-column my-3" name="input" style="display: none;">
-                    <label for="name" class="form-label me-2">Nome Utente:</label>
-                    <input class="" type="text" placeholder="Inserisci il nome dell'utente" name="name">
-                    <br>
-                    <br>
-                    <label for="name" class="form-label me-2">Età Utente:</label>
-                    <input class="" type="text" placeholder="Inserisci l'età dell'utente" name="eta">
-                    <br>
-                    <br>
-                    <button class="btn btn-primary m-5" type="button" onclick="()=>{
-                        const form = document.getElementById('vista_aggiunta');
-                        const nomeinput=document.createElement('input');
-                        input.type = 'text';
-                        input.placeholder = 'Inserisci il nome del campo aggiuntivo';
-                        input.name = `campo-aggiuntivo`;
-                        input.className = 'valore-aggiuntivo';
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.placeholder = 'Inserisci il valore del campo aggiuntivo';
-                        input.name = `campo-aggiuntivo`;
-                        input.className = 'valore-aggiuntivo';
-                        form.appendChild(nomeinput);
-                        form.appendChild(input);
-                        form.appendChild(document.createElement('br'));
-                        form.appendChild(document.createElement('br'));
-                    }">Aggiungi Altri Campi</button>
-                    <button class="btn btn-primary m-5" type="button" onclick="aggiungi()">Inserisci</button>
+                    <div class="input_spazio_aggiunta d-flex flex-column">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label me-2">Nome Utente:</label>
+                            <input class="" type="text" placeholder="Inserisci il nome dell'utente" name="name" required>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label me-2">Età Utente:</label>
+                            <input class="" type="text" placeholder="Inserisci l'età dell'utente" name="eta" required>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="inline-block d-flex justify-content-center">
+                        <button class="btn btn-primary m-5" type="button" onclick="aggiungiCampo()">Aggiungi Altri Campi</button>
+                        <script>
+                            function aggiungiCampo(){
+                                const div_input = document.getElementById('vista_aggiunta').querySelector('.input_spazio_aggiunta');
+                                const div_interno=document.createElement('div');
+                                div_interno.className='d-flex align-items-center gap-2';
+
+                                const nomeinput=document.createElement('input');
+                                nomeinput.type = 'text';
+                                nomeinput.placeholder = 'Inserisci il nome del campo aggiuntivo';
+                                nomeinput.name = `campo-aggiuntivo`;
+                                nomeinput.className = 'valore-aggiuntivo';
+                                nomeinput.required=true;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.placeholder = 'Inserisci il valore del campo aggiuntivo';
+                                input.name = `campo-aggiuntivo`;
+                                input.required=true;
+                                input.className = 'valore-aggiuntivo';
+                                const buttonRimuovi=document.createElement('button');
+                                buttonRimuovi.type='button';
+                                buttonRimuovi.className='btn btn-danger';
+                                buttonRimuovi.textContent='X';
+                                buttonRimuovi.onclick=()=>{
+                                    div_interno.remove(input, nomeinput, buttonRimuovi);
+                                };
+                                div_interno.appendChild(nomeinput);
+                                div_interno.appendChild(input);
+                                div_interno.appendChild(buttonRimuovi);
+
+                                div_input.appendChild(div_interno);
+                            }                        
+                            </script>
+                        <button class="btn btn-primary m-5" type="button" onclick="aggiungi()">Inserisci</button>
+                        <script>
+                            function aggiungi(){
+                                let nome=input.name.value;
+                                let eta=input.eta.value;
+                                let body={
+                                    'name': nome,
+                                    'age': eta
+                                };
+                                if(nome && eta){
+                                    if(document.getElementsByClassName('valore-aggiuntivo').length>0){
+                                        for(let i=0;i<document.getElementsByClassName('valore-aggiuntivo').length;i+=2){
+                                            let chiave=document.getElementsByClassName('valore-aggiuntivo')[i].value;
+                                            let valore=document.getElementsByClassName('valore-aggiuntivo')[i+1].value;
+                                            body[chiave]=valore;
+                                        }
+                                    }
+                                    
+                                    fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
+                                        method: 'POST',
+                                        headers: {
+                                            'accept': '*/*',
+                                            'Authorization': 'Bearer 5IDtoken',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(body)
+                                    })
+                                    .then(response=>{
+                                        if(!response.ok) throw new Error("Errore nella risposta");
+                                        //salvaLocazione(response.headers.get('location'));
+                                        vista_aggiunta();
+                                        return response.json();
+                                    }).catch(error=>console.error('Errore:', error));
+                                }
+                            }
+                        </script>
+                    </div>
                 </form>
                 <div class="row" id="contenitore" >
                    
@@ -65,6 +128,7 @@
                
 
             </div>
+
             <template id="template">
                 <div class="card shadow m-5 pt-2" style="width: 18rem;">
                     <img src="https://picsum.photos/200/100?random=" class="card-img-top" alt="Immagine casuale" />
@@ -80,14 +144,16 @@
             </template>
 
             <template id="template-form">
-                <form id="form-modifica" class="flex-column my-3" name="input-modifica">
-                    <label class="form-label me-2">Nome Utente:</label>
-                    <input class="template-name" type="text" placeholder="Inserisci il nome dell'utente" name="name-modifica">
-                    <br>
-                    <br>
-                    <label class="form-label me-2">Età Utente:</label>
-                    <input class="template-eta" type="text" placeholder="Inserisci l'età dell'utente" name="eta-modifica">
-                    <button id="button-form" class="btn btn-primary m-5" type="button" ">Modifica</button>
+                <form class="flex-column my-3" name="input-modifica">
+                    <div class="spazio_input d-flex flex-column">
+                        <label class="form-label me-2">Nome Utente:</label>
+                        <input class="template-name" type="text" placeholder="Inserisci il nome dell'utente" name="name-modifica" required>
+                        <label class="form-label me-2">Età Utente:</label>
+                        <input class="template-eta" type="text" placeholder="Inserisci l'età dell'utente" name="eta-modifica" required>
+                    </div>
+                    <div class="bottoni_spazio mt-3 inline-block d-flex justify-content-center">
+                        <button class="button-form btn btn-primary m-5" type="button">Modifica</button>
+                    </div>
                 </form>
             </template>
 
@@ -108,45 +174,129 @@
         ></script>
 
         <script>
-            function vista_aggiunta(){
-                const form = document.getElementById("vista_aggiunta");
-                form.style.display = form.style.display === "none" ? "flex" : "none";
-            }
-            function aggiungi(){
-                let nome=input.name.value;
-                let eta=input.eta.value;
-                if(nome && eta){
-                    let datiAggiuntivi={};
-                    for(let i=0;i<document.getElementsByClassName('valore-aggiuntivo').length;i+=2){
-                        let chiave=document.getElementsByClassName('valore-aggiuntivo')[i].value;
-                        let valore=document.getElementsByClassName('valore-aggiuntivo')[i+1].value;
-                        datiAggiuntivi[chiave]=valore;
+            fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
+                headers: { 'accept': '*/*' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Errore nella risposta");
+                return response.json();
+            })
+            .then(data => {
+                if(ottieniConf().length===0) salvaConf(data);
+
+                data.forEach(user => {
+                    const templ = document.getElementById("template").content.cloneNode(true);
+                    const cloneCard = templ.querySelector('.card'); 
+
+                    cloneCard.querySelector(".card-title").textContent = user.name;
+                    cloneCard.dataset.user = user.name;
+
+                    cloneCard.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
+                    cloneCard.querySelector(".card-text").textContent = `Età: ${user.age}`;
+
+                    const btnElimina = document.createElement("button");
+                    btnElimina.className = "btn btn-danger me-2";
+                    btnElimina.textContent = "Elimina Utente";
+                    btnElimina.onclick = () => eliminautente(user.name);
+                    cloneCard.querySelector(".card-footer").appendChild(btnElimina);
+
+                    const btnModifica = document.createElement("button");
+                    btnModifica.className = "btn btn-secondary me-2";
+                    btnModifica.textContent = "Modifica Utente";
+                    btnModifica.onclick = () => modificautente(user,cloneCard);
+                    cloneCard.querySelector(".card-footer").appendChild(btnModifica);
+
+                    const btnDettagli = document.createElement("button");
+                    btnDettagli.className = "btn btn-info";
+                    btnDettagli.textContent = "Dettagli Utente";
+                    btnDettagli.onclick = () => dettagliutente(user.name);
+                    cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
+
+                    document.getElementById("contenitore").appendChild(templ);
+                });
+            })
+            .catch(error => console.error('Errore:', error));
+
+            setInterval(() => {
+                fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
+                    headers: { 'accept': '*/*' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Errore nella risposta");
+                    return response.json();
+                }) .then(nuoviDati => {
+                    const modificati = ottieniModifiche(nuoviDati);
+                    if(modificati.length===0) return;
+                    pulisciBordi();
+                    for(const utenteModificato of modificati){
+                        let nomeutente=utenteModificato.name;
+                        const carta=document.querySelector(`[data-user="${nomeutente}"]`);
+                        if(!carta){
+                                const temp = document.getElementById("template").content.cloneNode(true);
+                                const cloneCard = temp.querySelector('.card'); 
+
+                                cloneCard.querySelector(".card-title").textContent = utenteModificato.name;
+                                cloneCard.dataset.user = utenteModificato.name;
+
+                                cloneCard.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Non Presente";
+                                cloneCard.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
+
+                                const btnElimina = document.createElement("button");
+                                btnElimina.className = "btn btn-danger me-2";
+                                btnElimina.textContent = "Elimina Utente";
+                                btnElimina.onclick = () => eliminautente(utenteModificato.name);
+                                cloneCard.querySelector(".card-footer").appendChild(btnElimina);
+
+                                const btnModifica = document.createElement("button");
+                                btnModifica.className = "btn btn-secondary me-2";
+                                btnModifica.textContent = "Modifica Utente";
+                                btnModifica.onclick = () => modificautente(utenteModificato,cloneCard);
+                                cloneCard.querySelector(".card-footer").appendChild(btnModifica);
+
+                                const btnDettagli = document.createElement("button");
+                                btnDettagli.className = "btn btn-info";
+                                btnDettagli.textContent = "Dettagli Utente";
+                                btnDettagli.onclick = () => dettagliutente(utenteModificato.name);
+                                cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
+
+                                document.getElementById("contenitore").appendChild(temp);
+                        } else{
+                            carta.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Non Presente";
+                            carta.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
+                            carta.classList.add('border-warning');
+                        } 
                     }
+                    salvaConf(nuoviDati);
+                }).catch(error => console.error('Errore:', error));
 
-                    fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
-                        method: 'POST',
-                        headers: {
-                            'accept': '*/*',
-                            'Authorization': 'Bearer 5IDtoken',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            'name': nome,
-                            'age': eta,
-                            datiAggiuntivi
-                        })
+                /* Versione alternativa in cui aggiorno solo utenti toccati da utente stesso
+                const locazioni=ottieniLocazioni();
+
+                for(const locazione of locazioni){
+                    let utenteDaAggiungere=locazione.split('/').pop();
+                    const carta=document.querySelector(`[data-user="${utenteDaAggiungere}"]`);
+                    fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
+                        headers: { 'accept': '* /*' } <-- messo spazio per non rompere al commento
                     })
-                    .then(response=>{
-                        if(!response.ok) throw new Error("Errore nella risposta");
-                        //salvo location passata utente
-                        salvaLocazione(response.headers.get('location'));
+                    .then(response => {
+                        if (!response.ok) throw new Error("Errore nella risposta");
                         return response.json();
-                    }).catch(error=>console.error('Errore:', error));
-                } else {
-                    alert("Nome ed età sono obbligatori");
-                }
-            }
+                    })
+                    .then(data => {
+                        const contenitore = document.querySelector(`.card[data-user="${data.name}"]`);
+                        contenitore.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
+                        contenitore.querySelector(".card-text").textContent = `Età: ${user.age}`;
 
+                        contenitore.classList.add('border-warning');
+                    })
+                    .catch(error => console.error('Errore:', error));
+
+                }
+                */
+            }, 2000);
+
+            /* Versione alternativa in cui aggiorno solo utenti toccati da utente stesso
+            //funz per gestione semplice di sessione per salvare modificati o aggiunti
             function salvaLocazione(location){
                 if(sessionStorage.getItem('locations')){
                     let locations=JSON.parse(sessionStorage.getItem('locations'));
@@ -157,7 +307,6 @@
                     sessionStorage.setItem('locations',JSON.stringify(locations));
                 }
             }
-
             function ottieniLocazioni(){
                 if(sessionStorage.getItem('locations')){
                     return JSON.parse(sessionStorage.getItem('locations'));
@@ -165,88 +314,62 @@
                     return [];
                 }
             }
-        </script>
+            */
 
-        <script>
-            fetch('https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users', {
-                headers: { 'accept': '*/*' }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("Errore nella risposta");
-                return response.json();
-            })
-            .then(data => {
-                data.forEach(user => {
-                    if(ottieniLocazioni().length>0){
-                        setInterval(() => {
-                            const locazioni=ottieniLocazioni();
-                            for(const locazione of locazioni){
-                                let utenteDaAggiungere=locazione.split('/').pop();
-                                const carta=document.querySelector(`[data-user="${utenteDaAggiungere}"]`);
-                                fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
-                                    headers: { 'accept': '*/*' }
-                                })
-                                .then(response => {
-                                    if (!response.ok) throw new Error("Errore nella risposta");
-                                    return response.json();
-                                })
-                                .then(data => {
-                                    const contenitore = document.querySelector(`.card[data-user="${data.name}"]`);
-                                    contenitore.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
-                                    contenitore.querySelector(".card-text").textContent = `Età: ${user.age}`;
+            function pulisciBordi(){
+                const carte=document.querySelectorAll('.card');
+                carte.forEach(carta => {
+                    carta.classList.remove('border-warning');
+                });
+            }
 
-                                    contenitore.classList.add('border-warning');
-                                })
-                                .catch(error => console.error('Errore:', error));
+            //funz per salvare elementi presenti così da aggiornare solo modificati
+            function salvaConf (config){
+                if(sessionStorage.getItem('config')){
+                    let conf=JSON.parse(sessionStorage.getItem('config'));
+                    conf.push(config);
+                    sessionStorage.setItem('config',JSON.stringify(conf));
+                } else {
+                    let conf=config;
+                    sessionStorage.setItem('config',JSON.stringify(conf));
+                }
+            }
 
-                            }
-                        }, 2000);
-                    } else{
-                        const fragment = document.getElementById("template").content.cloneNode(true);
-                        const cloneCard = fragment.querySelector('.card'); 
+            function ottieniConf(){
+                if(sessionStorage.getItem('config')){
+                    return JSON.parse(sessionStorage.getItem('config'));
+                } else {
+                    return [];
+                }
+            }
 
-                        cloneCard.querySelector(".card-title").textContent = user.name;
-                        cloneCard.dataset.user = user.name;
-
-                        cloneCard.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
-                        cloneCard.querySelector(".card-text").textContent = `Età: ${user.age}`;
-
-                        if (Object.keys(data).length>2) {
-                            for(const attributo of Object.keys(data)){
-                                if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
-                                    let testo = "";
-                                    for (const [chiave, valore] of Object.entries(data[attributo])) {
-                                        testo += `<p>${chiave}:</p> ${valore}<br>`;
-                                    }
-                                    cloneCard.querySelector(".card-text-2").innerHTML = testo;
-                                }
-                            }
+            function ottieniModifiche(nuovaConf){
+                if(sessionStorage.getItem('config')){
+                    let conf=JSON.parse(sessionStorage.getItem('config'));
+                    let modificati=[];
+                    for(const elemento of nuovaConf){
+                        const esiste = conf.some( oldEl => JSON.stringify(oldEl) === JSON.stringify(elemento));
+                        if (!esiste) {
+                            modificati.push(elemento);
                         }
 
-                        const btnElimina = document.createElement("button");
-                        btnElimina.className = "btn btn-danger me-2";
-                        btnElimina.textContent = "Elimina Utente";
-                        btnElimina.onclick = () => eliminautente(user.name);
-                        cloneCard.querySelector(".card-footer").appendChild(btnElimina);
-
-                        const btnModifica = document.createElement("button");
-                        btnModifica.className = "btn btn-secondary me-2";
-                        btnModifica.textContent = "Modifica Utente";
-                        btnModifica.onclick = () => modificautente(user,cloneCard);
-                        cloneCard.querySelector(".card-footer").appendChild(btnModifica);
-
-                        const btnDettagli = document.createElement("button");
-                        btnDettagli.className = "btn btn-info";
-                        btnDettagli.textContent = "Dettagli Utente";
-                        btnDettagli.onclick = () => dettagliutente(user.name);
-                        cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
-
-                        document.getElementById("contenitore").appendChild(fragment);
+                        /*
+                        let esiste = false;
+                        for (const oldEl of conf) {
+                        if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
+                            esiste = true;
+                            break;
+                        }
+                        }
+                        */
                     }
-                });
-            })
-            .catch(error => console.error('Errore:', error));
+                    return modificati;
+                } else {
+                    return nuovaConf;
+                }
+            }
 
+            //funz su singolo
             function dettagliutente(nomeutente) {
                 fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
                     headers: { 'accept': '*/*' }
@@ -257,16 +380,14 @@
                 })
                 .then(data => {
                     const contenitore = document.querySelector(`.card[data-user="${data.name}"]`);
-                    contenitore.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Non Presente";
-                    contenitore.querySelector(".card-text").textContent = `Età: ${user.age}`;
+                    contenitore.querySelector(".card-subtitle").textContent = data.role ? `Ruolo: ${data.role}` : "Ruolo: Non Presente";
+                    contenitore.querySelector(".card-text").textContent = `Età: ${data.age}`;
 
                     if (Object.keys(data).length>2) {
-                        for(const attributo of Object.keys(data)){
-                            if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
+                        for(const [chiave,valore] of Object.entries(data)){
+                            if(chiave!=="name" && chiave!=="age" && chiave!=="role"){
                                 let testo = "";
-                                for (const [chiave, valore] of Object.entries(data[attributo])) {
-                                    testo += `<p>${chiave}:</p> ${valore}<br>`;
-                                }
+                                testo += `<p>${chiave}: ${valore}</p>`;
                                 contenitore.querySelector(".card-text-2").innerHTML = testo;
                             }
                         }
@@ -277,7 +398,6 @@
                 })
                 .catch(error => console.error('Errore:', error));
             }
-
             function eliminautente(nomeutente) {
                 fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
                     method: 'DELETE',
@@ -293,70 +413,112 @@
                 })
                 .catch(error => console.error('Errore:', error));
             }
-
             function modificautente(utente, contenitore) {
                 const templateform = document.getElementById("template-form").content.cloneNode(true);
                 const form = templateform.querySelector('form');
 
-                form.querySelector(".template-name").value = utente.name;
-                form.querySelector(".template-eta").value = utente.age;
+                form.dataset.form_modifica=utente.name;
+
+                const spazio_input=form.querySelector('.spazio_input');
+                spazio_input.querySelector(".template-name").value = utente.name;
+                spazio_input.querySelector(".template-eta").value = utente.age;
 
                 if(Object.keys(utente).length>2){
-                    for(const attributo of Object.keys(utente)){
-                        if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
-                            for (const [chiave, valore] of Object.entries(utente[attributo])) {
-                                const labelData = document.createElement("label");
-                                labelData.className = "form-label me-2";
-                                labelData.textContent = `${chiave}:`;
-                                form.appendChild(labelData);
-                                const inputData = document.createElement("input");
-                                inputData.type = "text";
-                                inputData.value = valore;
-                                inputData.name = `data-${chiave}-modifica`;
-                                form.appendChild(inputData);
-                            }
-                        } else if(attributo==="role"){
+                    for(const [chiave, valore] of Object.entries(utente)){
+                        if(chiave!=="name" && chiave!=="age" && chiave!=="role"){
+                            const labelData = document.createElement("label");
+                            labelData.className = "form-label me-2";
+                            labelData.textContent = `${chiave}:`;
+                            spazio_input.appendChild(labelData);
+                            const inputData = document.createElement("input");
+                            inputData.type = "text";
+                            inputData.value = valore;
+                            inputData.required=true;
+                            inputData.name = `data-${chiave}-modifica`;
+                            spazio_input.appendChild(inputData);
+                        } else if(chiave==="role"){
                             const labelRole = document.createElement("label");
                             labelRole.className = "form-label me-2";
                             labelRole.textContent = "Ruolo Utente:";
-                            form.appendChild(labelRole);
+                            spazio_input.appendChild(labelRole);
                             const inputRole = document.createElement("input");
                             inputRole.type = "text";
                             inputRole.value = utente.role;
+                            inputRole.required=true;
                             inputRole.name = "role-modifica";
-                            form.appendChild(inputRole);
+                            spazio_input.appendChild(inputRole);
                         }
                     }
                 }
 
+                const button=document.createElement('button');
+                button.type='button';
+                button.className='btn btn-secondary m-5';
+                button.textContent='Aggiungi Parametro';
+                button.onclick=()=>{
+                                const labelData = document.createElement("input");
+                                labelData.className = "form-label me-2";
+                                labelData.type="text";
+                                labelData.placeholder="Inserisci il nome del campo aggiuntivo";
+                                labelData.required=true;
+                                labelData.name = `data-nuovo-modifica`;
+
+                                const inputData = document.createElement("input");
+                                inputData.type = "text";
+                                inputData.placeholder = "Inserisci il valore del campo aggiuntivo";
+                                inputData.name = `data-nuovo-modifica`;
+                                inputData.required=true;
+
+                                form.after(labelData, inputData);
+                };
+
+                const annulla=document.createElement('button');
+                annulla.type='button';
+                annulla.className='btn btn-secondary m-5';
+                annulla.textContent='Annulla Modifica';
+                annulla.onclick=()=>{
+                    const formEsistente=contenitore.querySelector('[data-form_modifica="' + utente.name + '"]');
+                    if(formEsistente){
+                        formEsistente.remove(); 
+                    }
+                };
+
+                const bottoni_spazio=form.querySelector('.bottoni_spazio');
+
+                bottoni_spazio.appendChild(annulla);
+                bottoni_spazio.appendChild(button);
                 contenitore.appendChild(templateform);
 
-                const formApp = contenitore.querySelector('#form-modifica');
-                const btnModificaForm = formApp.querySelector('#button-form');
-                btnModificaForm.onclick = (utente) => {
+                const input_form = contenitore.querySelector('[data-form_modifica="' + utente.name + '"]').querySelector('spazio_input');
+                const btnModificaForm = bottoni_spazio.querySelector('.button-form');
+                btnModificaForm.onclick = () => {
                     const bodyuno={};
 
-                    const nameVal = formApp.querySelector('.template-name').value.trim();
-                    const ageVal = formApp.querySelector('.template-eta').value;
+                    const nameVal = input_form.querySelector('.template-name').value.trim();
+                    const ageVal = input_form.querySelector('.template-eta').value;
 
                     bodyuno.name=nameVal;
                     bodyuno.age=ageVal;
 
-                    if(Object.keys(utente).length>2){
-                        for(const attributo of Object.keys(utente)){
-                            if(attributo!=="name" && attributo!=="age" && attributo!=="role"){
-                                for (const [chiave, valore] of Object.entries(utente[attributo])) {
-                                    const dataObj = {};
-                                    const dataVal = formApp.querySelector(`input[name="data-${chiave}-modifica"]`).value.trim();
-                                    dataObj[chiave] = dataVal;
-                                    bodyuno.data = dataObj;
-                                }
+                    if(Object.keys(utente).length>2){ //valori in più gia presenti
+                        for(const [chiave,valore] of Object.entries(data)){
+                            if(chiave!=="name" && chiave!=="age" && chiave!=="role"){
+                                const dataVal = input_form.querySelector(`input[name="data-${chiave}-modifica"]`).value.trim();
+                                bodyuno[chiave] = dataVal;
                             } else if(attributo==="role"){
-                                const roleVal = formApp.querySelector('input[name="role-modifica"]').value.trim();
+                                const roleVal = input_form.querySelector('input[name="role-modifica"]').value.trim();
                                 bodyuno.role=roleVal;
                             }
                         }
                     }
+
+                    const nuoviCampi = input_form.querySelectorAll('.data-nuovo-modifica');
+                    if(nuoviCampi.length>0 && nuoviCampi.length%2===0){
+                        for(let i=0; i<nuoviCampi.length;i+=2){
+                            bodyuno[nuoviCampi[i].value.trim()]=nuoviCampi[i+1].value.trim();
+                        }
+                    }
+
 
                     fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${utente.name}`, {
                         method: 'PUT',
@@ -369,7 +531,7 @@
                     })
                     .then(resp => {
                         if (!resp.ok) throw new Error('Errore nella modifica');
-                        salvaLocazione(resp.headers.get('location'));
+                        //salvaLocazione(resp.headers.get('location'));
                         return resp.json();
                     })
                     .then(()=> location.reload())
