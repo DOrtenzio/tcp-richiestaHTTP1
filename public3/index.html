@@ -16,18 +16,61 @@
             integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
             crossorigin="anonymous"
         />
+        <style>
+            body { 
+                background-color: #f8f9fa; 
+            }
+            .card:hover { 
+                transform: translateY(-5px); 
+                transition: all 0.2s ease-in-out; 
+            }
+            #contenitore { 
+                display: flex; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+            }
+
+            .card-footer .btn {
+                width: 80%;
+                max-width: 220px;
+                text-align: center;
+            }
+
+            .bottoni_spazio {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .bottoni_spazio .btn {
+                min-width: 150px;
+            }
+            .card > form {
+                width: 100%;
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                border-bottom-left-radius: 1rem;
+                border-bottom-right-radius: 1rem;
+                margin-top: 1rem;
+            }
+
+        </style>
+
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
     </head>
 
     <body>
         <main>
-            <div class="d-block bg-primary text-white p-3">
+            <div class="bg-primary text-white py-4 shadow-sm mb-4">
                 <h1 class="text-center">Richiesta HTTP con Fetch API JavaScript</h1>
             </div>
-            <div class="container" >
-                <div id="div-header-botton" class="d-flex flex-column my-3 justify-content-center align-items-center">
+            <div class="container my-4" >
+                <div id="div-header-botton" class="text-center mb-4">
                     <h1 class="text-center my-3">Elenco Utenti</h1>
-                    <div id="barra-pulsanti" class="p-3">
+                    <div id="barra-pulsanti" class="d-flex justify-content-center gap-3 flex-wrap my-3">
                         <button class="btn btn-success mx-3" onclick="vista_aggiunta()">Aggiungi Utente</button>
                         <script>
                             function vista_aggiunta(){
@@ -37,20 +80,20 @@
                         </script>
                     </div>
                 </div>
-                <form id="vista_aggiunta" class="flex-column my-3" name="input" style="display: none;">
+                <form id="vista_aggiunta" class="card p-4 shadow-sm bg-light my-3 rounded-3" name="input" style="display: none;">
                     <div class="input_spazio_aggiunta d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2">
-                            <label class="form-label me-2">Nome Utente:</label>
-                            <input class="" type="text" placeholder="Inserisci il nome dell'utente" name="name" required>
+                        <div class="mb-3">
+                            <label class="form-label">Nome Utente:</label>
+                            <input type="text" class="form-control" placeholder="Inserisci il nome dell'utente" name="name" required>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <label class="form-label me-2">Età Utente:</label>
-                            <input class="" type="text" placeholder="Inserisci l'età dell'utente" name="eta" required>
+                        <div class="mb-3">
+                            <label class="form-label">Età Utente:</label>
+                            <input class="form-control" type="text" placeholder="Inserisci l'età dell'utente" name="eta" required>
                         </div>
                     </div>
                     
                     
-                    <div class="inline-block d-flex justify-content-center">
+                    <div class="d-flex justify-content-center flex-wrap gap-3">
                         <button class="btn btn-primary m-5" type="button" onclick="aggiungiCampo()">Aggiungi Altri Campi</button>
                         <script>
                             function aggiungiCampo(){
@@ -130,21 +173,21 @@
             </div>
 
             <template id="template">
-                <div class="card shadow m-5 pt-2" style="width: 18rem;">
-                    <img src="https://picsum.photos/200/100?random=" class="card-img-top" alt="Immagine casuale" />
-                    <div class="card-body">
+                <div class="card shadow-sm border-0 rounded-4 my-4 mx-3" style="width: 20rem;">
+                    <img src="https://picsum.photos/200/100?random=" class="card-img-top rounded-top my-4" alt="Immagine casuale" />
+                    <div class="card-body my-4">
                         <h5 class="card-title"></h5>
                         <h6 class="card-subtitle mb-2 text-body-secondary"></h6>
                         <p class="card-text"></p>
                         <p class="card-text-2"></p>
                     </div>
-                    <div class="card-footer text-body-secondary">
+                    <div class="card-footer bg-light d-flex flex-column align-items-center gap-2 my-4">
                     </div>
                 </div>
             </template>
 
             <template id="template-form">
-                <form class="flex-column my-3" name="input-modifica">
+                <form class="card p-3 bg-light shadow-sm my-3 rounded-3" name="input-modifica">
                     <div class="spazio_input d-flex flex-column">
                         <label class="form-label me-2">Nome Utente:</label>
                         <input class="template-name" type="text" placeholder="Inserisci il nome dell'utente" name="name-modifica" required>
@@ -225,7 +268,8 @@
                     if (!response.ok) throw new Error("Errore nella risposta");
                     return response.json();
                 }) .then(nuoviDati => {
-                    const modificati = ottieniModifiche(nuoviDati);
+                    const modificati = ottieniModifiche(nuoviDati).modificati;
+                    const cancellati = ottieniModifiche(nuoviDati).cancellati;
                     if(modificati.length===0) return;
                     pulisciBordi();
                     for(const utenteModificato of modificati){
@@ -265,6 +309,13 @@
                             carta.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
                             carta.classList.add('border-warning');
                         } 
+                    }
+                    for(const utenteCancellato of cancellati){
+                        let nomeutente=utenteCancellato.name;
+                        const carta=document.querySelector(`[data-user="${nomeutente}"]`);
+                        if(carta){
+                            carta.remove();
+                        }
                     }
                     salvaConf(nuoviDati);
                 }).catch(error => console.error('Errore:', error));
@@ -317,6 +368,7 @@
             */
 
             function pulisciBordi(){
+                console.log('pulizia bordi');
                 const carte=document.querySelectorAll('.card');
                 carte.forEach(carta => {
                     carta.classList.remove('border-warning');
@@ -325,14 +377,8 @@
 
             //funz per salvare elementi presenti così da aggiornare solo modificati
             function salvaConf (config){
-                if(sessionStorage.getItem('config')){
-                    let conf=JSON.parse(sessionStorage.getItem('config'));
-                    conf.push(config);
-                    sessionStorage.setItem('config',JSON.stringify(conf));
-                } else {
-                    let conf=config;
-                    sessionStorage.setItem('config',JSON.stringify(conf));
-                }
+                if(sessionStorage.getItem('config')) sessionStorage.setItem('config',JSON.stringify(JSON.parse(sessionStorage.getItem('config'))));
+                else sessionStorage.setItem('config',JSON.stringify(config));
             }
 
             function ottieniConf(){
@@ -348,24 +394,37 @@
                     let conf=JSON.parse(sessionStorage.getItem('config'));
                     let modificati=[];
                     for(const elemento of nuovaConf){
-                        const esiste = conf.some( oldEl => JSON.stringify(oldEl) === JSON.stringify(elemento));
-                        if (!esiste) {
-                            modificati.push(elemento);
-                        }
-
-                        /*
                         let esiste = false;
                         for (const oldEl of conf) {
-                        if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
-                            esiste = true;
-                            break;
+                            if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
+                                esiste = true;
+                                break;
+                            }
                         }
-                        }
-                        */
                     }
-                    return modificati;
+
+                    const rimossi=[];
+                    for (const oldEl of conf) {
+                        let ancoraPresente = false;
+                        for (const elemento of nuovaConf) {
+                            if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
+                            ancoraPresente = true;
+                            break;
+                            }
+                        }
+                        if (!ancoraPresente) {
+                            rimossi.push(oldEl);
+                        }
+                    }
+                    return {
+                        modificati,
+                        rimossi
+                    };
                 } else {
-                    return nuovaConf;
+                    return {
+                        modificati:nuovaConf,
+                        cancellati:rimossi
+                    };
                 }
             }
 
@@ -453,7 +512,7 @@
 
                 const button=document.createElement('button');
                 button.type='button';
-                button.className='btn btn-secondary m-5';
+                button.className='btn btn-outline-secondary mx-2';
                 button.textContent='Aggiungi Parametro';
                 button.onclick=()=>{
                                 const labelData = document.createElement("input");
@@ -474,7 +533,7 @@
 
                 const annulla=document.createElement('button');
                 annulla.type='button';
-                annulla.className='btn btn-secondary m-5';
+                annulla.className='btn btn-secondary mx-2';
                 annulla.textContent='Annulla Modifica';
                 annulla.onclick=()=>{
                     const formEsistente=contenitore.querySelector('[data-form_modifica="' + utente.name + '"]');
