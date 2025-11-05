@@ -182,8 +182,8 @@ function dettagliutente(nomeutente) {
             if (Object.keys(data).length>2) {
                 for(const [chiave,valore] of Object.entries(data)){
                     if(chiave!=="name" && chiave!=="age" && chiave!=="role"){
-                        let testo ="";
-                        if(isPlainObject(valore)){ //se è un oggetto annidato
+                        let testo = carta.querySelector(".card-text-2").innerHTML;
+                        if(isUnOggetto(valore)){ //se è un oggetto annidato
                             testo += `<p>${chiave}:</p><ul>`;
                             for(const [subChiave, subValore] of Object.entries(valore)){
                                 testo += `<li>${subChiave}: ${subValore}</li>`;
@@ -204,8 +204,8 @@ function dettagliutente(nomeutente) {
         btnDettagli.dataset.isdettagliata='false';
     }
 }
-function isPlainObject(val){
-    return Object.prototype.toString.call(val) === '[object Object]';
+function isUnOggetto(val){
+    return Object.prototype.toString.call(val) === '[object Object]'; //richiedo prototipo forzando il this su val
 }
 function eliminautente(nomeutente) {
     fetch(`https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api/users/${nomeutente}`, {
