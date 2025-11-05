@@ -1,0 +1,39 @@
+body { 
+    background-color: #f8f9fa; 
+}
+.card:hover { 
+    transform: translateY(-5px); 
+    transition: all 0.2s ease-in-out; 
+}
+#contenitore { 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+}
+
+.card-footer .btn {
+    width: 80%;
+    max-width: 220px;
+    text-align: center;
+}
+
+.bottoni_spazio {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.bottoni_spazio .btn {
+    min-width: 150px;
+}
+.card > form {
+    width: 100%;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    margin-top: 1rem;
+}
