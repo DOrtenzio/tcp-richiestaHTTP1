@@ -67,7 +67,7 @@ setInterval(() => {
                     cloneCard.querySelector(".card-title").textContent = utenteModificato.name;
                     cloneCard.dataset.user = utenteModificato.name;
 
-                    cloneCard.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Non Presente";
+                    cloneCard.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Schiaccia Dettagli";
                     cloneCard.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
 
                     const btnElimina = document.createElement("button");
@@ -96,14 +96,19 @@ setInterval(() => {
                 carta.classList.add('border-warning');
             } 
         }
-        for(const utenteCancellato of cancellati){
-            let nomeutente=utenteCancellato.name;
-            const carta=document.querySelector(`[data-user="${nomeutente}"]`);
-            if(carta){
-                carta.remove();
+        if(cancellati){
+            for(const utenteCancellato of cancellati){
+                let nomeutente=utenteCancellato.name;
+                const carta=document.querySelector(`[data-user="${nomeutente}"]`);
+                if(carta){
+                    carta.remove();
+                }
             }
         }
-        salvaConf(nuoviDati);
+        if(cancellati || modificati){
+            console.log("SALVATAGGIO");
+            salvaConf(nuoviDati);
+        }
     }).catch(error => console.error('Errore:', error));
 }, 2000);
 
@@ -116,8 +121,7 @@ function pulisciBordi(){
 
 //funz per salvare elementi presenti così da aggiornare solo modificati
 function salvaConf (config){
-    if(sessionStorage.getItem('config')) sessionStorage.setItem('config',JSON.stringify(JSON.parse(sessionStorage.getItem('config'))));
-    else sessionStorage.setItem('config',JSON.stringify(config));
+    sessionStorage.setItem('config',JSON.stringify(config));
 }
 
 function ottieniConf(){
@@ -128,43 +132,41 @@ function ottieniConf(){
     }
 }
 
-function ottieniModifiche(nuovaConf){
-    if(sessionStorage.getItem('config')){
-        let conf=JSON.parse(sessionStorage.getItem('config'));
-        let modificati=[];
-        for(const elemento of nuovaConf){
-            for (const oldEl of conf) {
-                if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
-                    esiste = true;
-                    break;
-                }
-            }
-        }
+function ottieniModifiche(nuovaConf) {
+    let modificati = [];
+    let rimossi = [];
+    const conf = sessionStorage.getItem('config') ? JSON.parse(sessionStorage.getItem('config')) : [];
 
-        const rimossi=[];
-        for (const oldEl of conf) {
-            let ancoraPresente = false;
-            for (const elemento of nuovaConf) {
-                if (JSON.stringify(oldEl) === JSON.stringify(elemento)) {
-                ancoraPresente = true;
+    for (const utNuovo of nuovaConf) {
+        let vecchio;
+        for (const utVecchio of conf) {
+            if (utVecchio.name === utNuovo.name) {
+                vecchio = utVecchio;
                 break;
-                }
-            }
-            if (!ancoraPresente) {
-                rimossi.push(oldEl);
             }
         }
-        return {
-            modificati,
-            rimossi
-        };
-    } else {
-        return {
-            modificati:nuovaConf,
-            cancellati:rimossi
-        };
+        if (!vecchio) modificati.push(utNuovo);
+        else if (!oggettiUguali(vecchio, utNuovo)) modificati.push(utNuovo);
     }
+
+    for (const utVecchio of conf) {
+        let presente = false;
+        for (const nuovo of nuovaConf) {
+            if (nuovo.name === utVecchio.name) {
+                presente = true;
+                break;
+            }
+        }
+        if (!presente) rimossi.push(utVecchio);
+    }
+    return { modificati, rimossi };
 }
+
+function oggettiUguali(ogg1, ogg2) {
+    return ogg1.name === ogg2.name && ogg1.age === ogg2.age;
+}
+
+
 
 //funz su singolo
 function dettagliutente(nomeutente) {
