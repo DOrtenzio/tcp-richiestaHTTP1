@@ -49,49 +49,68 @@
                             <label class="form-label">Età Utente:</label>
                             <input class="form-control" type="text" placeholder="Inserisci l'età dell'utente" name="eta" required>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ruolo Utente:</label>
+                            <input class="form-control" type="text" placeholder="Inserisci il ruolo dell'utente" name="ruolo">
+                        </div>
                     </div>       
                     <div class="d-flex justify-content-center flex-wrap gap-3">
                         <button class="btn btn-primary m-5" type="button" onclick="aggiungiCampo()">Aggiungi Altri Campi</button>
                         <script>
-                            function aggiungiCampo(){
+                            function aggiungiCampo() {
                                 const div_input = document.getElementById('vista_aggiunta').querySelector('.input_spazio_aggiunta');
-                                const div_interno=document.createElement('div');
-                                div_interno.className='d-flex align-items-center gap-2';
+                                const div_interno = document.createElement('div');
+                                div_interno.className = 'card card-body bg-light mb-3 p-3 d-flex flex-column gap-2';
 
-                                const nomeinput=document.createElement('input');
+                                const divNome = document.createElement('div');
+                                divNome.className = 'mb-2';
+                                const labelNome = document.createElement('label');
+                                labelNome.className = 'form-label small text-muted';
+                                labelNome.textContent = 'Nome campo:';
+                                const nomeinput = document.createElement('input');
                                 nomeinput.type = 'text';
                                 nomeinput.placeholder = 'Inserisci il nome del campo aggiuntivo';
-                                nomeinput.name = `campo-aggiuntivo`;
-                                nomeinput.className = 'valore-aggiuntivo';
-                                nomeinput.required=true;
+                                nomeinput.className = 'form-control valore-aggiuntivo';
+                                nomeinput.required = true;
+                                divNome.appendChild(labelNome);
+                                divNome.appendChild(nomeinput);
+
+                                const divValore = document.createElement('div');
+                                divValore.className = 'mb-2';
+                                const labelValore = document.createElement('label');
+                                labelValore.className = 'form-label small text-muted';
+                                labelValore.textContent = 'Valore campo:';
                                 const input = document.createElement('input');
                                 input.type = 'text';
                                 input.placeholder = 'Inserisci il valore del campo aggiuntivo';
-                                input.name = `campo-aggiuntivo`;
-                                input.required=true;
-                                input.className = 'valore-aggiuntivo';
-                                const buttonRimuovi=document.createElement('button');
-                                buttonRimuovi.type='button';
-                                buttonRimuovi.className='btn btn-danger';
-                                buttonRimuovi.textContent='X';
-                                buttonRimuovi.onclick=()=>{
-                                    div_interno.remove(input, nomeinput, buttonRimuovi);
-                                };
-                                div_interno.appendChild(nomeinput);
-                                div_interno.appendChild(input);
-                                div_interno.appendChild(buttonRimuovi);
+                                input.className = 'form-control valore-aggiuntivo';
+                                input.required = true;
+                                divValore.appendChild(labelValore);
+                                divValore.appendChild(input);
 
+                                const buttonRimuovi = document.createElement('button');
+                                buttonRimuovi.type = 'button';
+                                buttonRimuovi.className = 'btn btn-sm btn-outline-danger align-self-start';
+                                buttonRimuovi.textContent = 'Rimuovi campo';
+                                buttonRimuovi.onclick = () => div_interno.remove();
+
+                                div_interno.appendChild(divNome);
+                                div_interno.appendChild(divValore);
+                                div_interno.appendChild(buttonRimuovi);
                                 div_input.appendChild(div_interno);
-                            }                        
+                            }
                         </script>
+
                         <button class="btn btn-primary m-5" type="button" onclick="aggiungi()">Inserisci</button>
                         <script>
                             function aggiungi(){
                                 let nome=input.name.value;
                                 let eta=input.eta.value;
+                                let ruolo=input.ruolo.value;
                                 let body={
                                     'name': nome,
-                                    'age': eta
+                                    'age': eta,
+                                    'role':ruolo
                                 };
                                 if(nome && eta){
                                     if(document.getElementsByClassName('valore-aggiuntivo').length>0){
@@ -129,7 +148,7 @@
             </div>
 
             <template id="template">
-                <div class="card shadow-sm border-0 rounded-4 my-4 mx-3" style="width: 20rem;" data-isDettagliata="false">
+                <div class="card shadow-sm border-0 rounded-4 my-4 mx-3" style="width: 20rem;">
                     <img src="https://picsum.photos/200/100?random=" class="card-img-top rounded-top my-4" alt="Immagine casuale" />
                     <div class="card-body my-4">
                         <h5 class="card-title"></h5>
@@ -145,10 +164,10 @@
             <template id="template-form">
                 <form class="card p-3 bg-light shadow-sm my-3 rounded-3" name="input-modifica">
                     <div class="spazio_input d-flex flex-column">
-                        <label class="form-label me-2">Nome Utente:</label>
-                        <input class="template-name" type="text" placeholder="Inserisci il nome dell'utente" name="name-modifica" required>
-                        <label class="form-label me-2">Età Utente:</label>
-                        <input class="template-eta" type="text" placeholder="Inserisci l'età dell'utente" name="eta-modifica" required>
+                        <label class="form-label small text-muted">Nome Utente:</label>
+                        <input class="form-control template-name" type="text" placeholder="Inserisci il nome dell'utente" name="name-modifica" required>
+                        <label class="form-label small text-muted">Età Utente:</label>
+                        <input class="form-control template-eta" type="text" placeholder="Inserisci l'età dell'utente" name="eta-modifica" required>
                     </div>
                     <div class="bottoni_spazio mt-3 inline-block d-flex justify-content-center">
                         <button class="button-form btn btn-primary m-5" type="button">Modifica</button>

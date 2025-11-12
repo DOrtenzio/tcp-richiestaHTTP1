@@ -1,10 +1,6 @@
 body { 
     background-color: #f8f9fa; 
 }
-.card:hover { 
-    transform: translateY(-5px); 
-    transition: all 0.2s ease-in-out; 
-}
 #contenitore { 
     display: flex; 
     flex-wrap: wrap; 

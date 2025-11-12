@@ -24,7 +24,11 @@ fetch(urlBase+"/users", {
         const btnElimina = document.createElement("button");
         btnElimina.className = "btn btn-danger me-2";
         btnElimina.textContent = "Elimina Utente";
-        btnElimina.onclick = () => eliminautente(user.name);
+        btnElimina.onclick = () => {
+            if (confirm(`Sei sicuro di voler eliminare l'utente ${user.name}?`)) {
+                eliminautente(user.name);
+            }
+        };
         cloneCard.querySelector(".card-footer").appendChild(btnElimina);
 
         const btnModifica = document.createElement("button");
@@ -36,6 +40,7 @@ fetch(urlBase+"/users", {
         const btnDettagli = document.createElement("button");
         btnDettagli.className = "btn btn-info";
         btnDettagli.textContent = "Dettagli Utente";
+        btnDettagli.dataset.isdettagliata="false";
         btnDettagli.onclick = () => dettagliutente(user.name);
         cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
 
@@ -73,7 +78,11 @@ setInterval(() => {
                     const btnElimina = document.createElement("button");
                     btnElimina.className = "btn btn-danger me-2";
                     btnElimina.textContent = "Elimina Utente";
-                    btnElimina.onclick = () => eliminautente(utenteModificato.name);
+                    btnElimina.onclick = () => {
+                        if (confirm(`Sei sicuro di voler eliminare l'utente ${utenteModificato.name}?`)) {
+                            eliminautente(utenteModificato.name);
+                        }
+                    };
                     cloneCard.querySelector(".card-footer").appendChild(btnElimina);
 
                     const btnModifica = document.createElement("button");
@@ -85,6 +94,7 @@ setInterval(() => {
                     const btnDettagli = document.createElement("button");
                     btnDettagli.className = "btn btn-info";
                     btnDettagli.textContent = "Dettagli Utente";
+                    btnDettagli.dataset.isdettagliata="false";
                     btnDettagli.onclick = () => dettagliutente(utenteModificato.name);
                     cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
 
@@ -106,7 +116,6 @@ setInterval(() => {
             }
         }
         if(cancellati || modificati){
-            console.log("SALVATAGGIO");
             salvaConf(nuoviDati);
         }
     }).catch(error => console.error('Errore:', error));
@@ -171,7 +180,7 @@ function oggettiUguali(ogg1, ogg2) {
 //funz su singolo
 function dettagliutente(nomeutente) {
     const btnDettagli = document.querySelector(`.card[data-user="${nomeutente}"]`).querySelector(".btn.btn-info");
-    if(btnDettagli.dataset.isdettagliata==='false'){
+    if(btnDettagli.dataset.isdettagliata==="false"){
         fetch(urlBase+"/users"+`/${nomeutente}`, {
             headers: { 'accept': '*/*' }
         })
@@ -200,13 +209,15 @@ function dettagliutente(nomeutente) {
                     }
                 }
             }
-            btnDettagli.dataset.isdettagliata='true';
+            btnDettagli.dataset.isdettagliata="true";
+            btnDettagli.innerHTML="Vedi Meno";
         })
         .catch(error => console.error('Errore:', error));
     }else{
         const carta = document.querySelector(`.card[data-user="${nomeutente}"]`);
         carta.querySelector(".card-text-2").innerHTML = "";
-        btnDettagli.dataset.isdettagliata='false';
+        btnDettagli.dataset.isdettagliata="false";
+        btnDettagli.innerHTML="Dettagli Utente";
     }
 }
 function isUnOggetto(val){
@@ -248,89 +259,84 @@ function modificautente(utenteNoDettaglio, carta) {
         inputName.value = utente.name;
         const inputEta = spazio_input.querySelector(".template-eta");
         inputEta.value = utente.age;
-        const labelRole = document.createElement("label");
-        labelRole.className = "form-label me-2";
-        labelRole.textContent = "Ruolo:";
-        spazio_input.appendChild(labelRole);
 
+        const divRole = document.createElement("div");
+        divRole.className = "mb-2";
+        const labelRole = document.createElement("label");
+        labelRole.className = "form-label small text-muted";
+        labelRole.textContent = "Ruolo:";
+        divRole.appendChild(labelRole);
         const inputRole = document.createElement("input");
         inputRole.type = "text";
         inputRole.value = utente.role || "";
         inputRole.required = true;
         inputRole.name = "role-modifica";
-        inputRole.className = "me-2";
-        spazio_input.appendChild(inputRole);
+        inputRole.className = "form-control";
+        divRole.appendChild(inputRole);
+        spazio_input.appendChild(divRole);
 
         
-        if (Object.keys(utente).length > 2) { // campi già esistono
+        if (Object.keys(utente).length > 2) { 
+            let cont = 1;
             for (const [chiave, valore] of Object.entries(utente)) {
                 if (chiave !== "name" && chiave !== "age" && chiave !== "role") {
                     const div_contenitore = document.createElement("div");
-                    div_contenitore.style.display = "flex";
-                    div_contenitore.style.flexDirection = "column";
-                    div_contenitore.style.marginBottom = "10px";
-
-                    const inputChiave = document.createElement("input");
-                    inputChiave.type = "text";
-                    inputChiave.value = chiave;
-                    inputChiave.required = true;
-                    inputChiave.placeholder = "Chiave";
-                    inputChiave.name = `key-${chiave}-modifica`;
-
-                    div_contenitore.appendChild(inputChiave);
-
-                    if (isUnOggetto(valore)) { // se è un oggetto annidato
+                    div_contenitore.className = "card card-body bg-light mb-3 p-3 border-0 shadow-sm";
+                    const labelCampo = document.createElement("h6");
+                    labelCampo.className = "fw-semibold text-secondary mb-3";
+                    labelCampo.textContent = `Campo ${cont++}`;
+                    div_contenitore.appendChild(labelCampo);
+                    const divChiave = document.createElement("div");
+                    divChiave.className = "mb-2";
+                    divChiave.innerHTML = `
+                        <label class="form-label small text-muted">Chiave</label>
+                        <input type="text" class="form-control" name="key-${chiave}-modifica"
+                            value="${chiave}" required />
+                    `;
+                    div_contenitore.appendChild(divChiave);
+                    if (isUnOggetto(valore)) {
                         for (const [subChiave, subValore] of Object.entries(valore)) {
                             const divSub = document.createElement("div");
-                            divSub.style.display = "inline-flex";
-                            divSub.style.alignItems = "center";
-                            divSub.style.marginBottom = "5px";
+                            divSub.className = "row g-2 align-items-center mb-2";
 
-                            const inputSubChiave = document.createElement("input");
-                            inputSubChiave.type = "text";
-                            inputSubChiave.value = subChiave;
-                            inputSubChiave.placeholder = "Sottochiave";
-                            inputSubChiave.required = true;
-                            inputSubChiave.name = `subkey-${chiave}-${subChiave}`;
-
-
-                            const inputSubValore = document.createElement("input");
-                            inputSubValore.type = "text";
-                            inputSubValore.value = subValore;
-                            inputSubValore.placeholder = "Sottovalore";
-                            inputSubValore.required = true;
-                            inputSubValore.name = `subvalue-${chiave}-${subChiave}`;
-
-                            const btnRemoveSub = document.createElement("button");
-                            btnRemoveSub.type = "button";
-                            btnRemoveSub.textContent = "X";
-                            btnRemoveSub.className = "btn btn-sm btn-outline-danger ms-1";
-                            btnRemoveSub.onclick = () => divSub.remove();
-
-                            divSub.appendChild(inputSubChiave);
-                            divSub.appendChild(inputSubValore);
-                            divSub.appendChild(btnRemoveSub);
-
+                            divSub.innerHTML = `
+                                <div class="col-5">
+                                    <input type="text" class="form-control form-control-sm"
+                                        name="subkey-${chiave}-${subChiave}" placeholder="Sottochiave"
+                                        value="${subChiave}" required />
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" class="form-control form-control-sm"
+                                        name="subvalue-${chiave}-${subChiave}" placeholder="Sottovalore"
+                                        value="${subValore}" required />
+                                </div>
+                                <div class="col-2 d-flex justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger">X</button>
+                                </div>
+                            `;
+                            divSub.querySelector("button").onclick = () => divSub.remove();
                             div_contenitore.appendChild(divSub);
                         }
                     } else {
-                        const inputData = document.createElement("input");
-                        inputData.type = "text";
-                        inputData.value = valore;
-                        inputData.required = true;
-                        inputData.name = `data-${chiave}-modifica`;
-                        inputData.placeholder = "Valore";
-
-                        div_contenitore.appendChild(inputData);
+                        const divValore = document.createElement("div");
+                        divValore.className = "mb-2";
+                        divValore.innerHTML = `
+                            <label class="form-label small text-muted">Valore</label>
+                            <input type="text" class="form-control" name="data-${chiave}-modifica"
+                                value="${valore}" required />
+                        `;
+                        div_contenitore.appendChild(divValore);
                     }
+                    const divBtnRemove = document.createElement("div");
+                    divBtnRemove.className = "mt-2";
+                    divBtnRemove.innerHTML = `
+                        <button type="button" class="btn btn-sm btn-outline-danger">
+                            Rimuovi campo
+                        </button>
+                    `;
+                    divBtnRemove.querySelector("button").onclick = () => div_contenitore.remove();
+                    div_contenitore.appendChild(divBtnRemove);
 
-                    const btnRemove = document.createElement("button");
-                    btnRemove.type = "button";
-                    btnRemove.textContent = "Rimuovi campo";
-                    btnRemove.className = "btn btn-sm btn-outline-danger mt-1";
-                    btnRemove.onclick = () => div_contenitore.remove();
-
-                    div_contenitore.appendChild(btnRemove);
                     spazio_input.appendChild(div_contenitore);
                 }
             }
@@ -343,33 +349,37 @@ function modificautente(utenteNoDettaglio, carta) {
         button.textContent = 'Aggiungi Parametro';
         button.onclick = () => {
             const div_contenitore = document.createElement("div");
-            div_contenitore.style.display = "inline-flex";
-            div_contenitore.style.alignItems = "center";
-            div_contenitore.style.marginTop="5px";
-            div_contenitore.style.width="100%";
+            div_contenitore.className = "card card-body bg-light mb-3 p-3 border-0 shadow-sm";
+            const labelCampo = document.createElement("h6");
+            labelCampo.className = "fw-semibold text-secondary mb-3";
+            div_contenitore.appendChild(labelCampo);
+            const divChiave = document.createElement("div");
+            divChiave.className = "mb-2";
+            divChiave.innerHTML = `
+                <label class="form-label small text-muted">Chiave</label>
+                <input type="text" class="form-control data-nuovo-chiave" placeholder="Campo" required />
+            `;
+            div_contenitore.appendChild(divChiave);
+            const divValore = document.createElement("div");
+            divValore.className = "mb-2";
+            divValore.innerHTML = `
+                <label class="form-label small text-muted">Valore</label>
+                <input type="text" class="form-control data-nuovo-valore" placeholder="Valore" required />
+            `;
+            div_contenitore.appendChild(divValore);
+            const divBtnRemove = document.createElement("div");
+            divBtnRemove.className = "mt-2";
+            divBtnRemove.innerHTML = `
+                <button type="button" class="btn btn-sm btn-outline-danger">
+                    Rimuovi campo
+                </button>
+            `;
+            divBtnRemove.querySelector("button").onclick = () => div_contenitore.remove();
+            div_contenitore.appendChild(divBtnRemove);
 
-            const inputChiave = document.createElement("input");
-            inputChiave.type = "text";
-            inputChiave.placeholder = "Nome campo";
-            inputChiave.required = true;
-            inputChiave.className = "data-nuovo-chiave me-1";
-            const inputValore = document.createElement("input");
-            inputValore.type = "text";
-            inputValore.placeholder = "Valore campo";
-            inputValore.required = true;
-            inputValore.className = "data-nuovo-valore me-1";
-
-            const btnRemove = document.createElement("button");
-            btnRemove.type = "button";
-            btnRemove.textContent = "X";
-            btnRemove.className = "btn btn-sm btn-outline-danger";
-            btnRemove.onclick = () => div_contenitore.remove();
-
-            div_contenitore.appendChild(inputChiave);
-            div_contenitore.appendChild(inputValore);
-            div_contenitore.appendChild(btnRemove);
             spazio_input.appendChild(div_contenitore);
         };
+
 
         const annulla = document.createElement('button');
         annulla.type = 'button';
@@ -395,8 +405,7 @@ function modificautente(utenteNoDettaglio, carta) {
                 role: input_form.querySelector('input[name="role-modifica"]').value.trim()
             };
 
-            const campiDiv = input_form.querySelectorAll(':scope > div'); //:scope per figli
-
+            const campiDiv = input_form.querySelectorAll('.card.card-body'); //ricavo tutti box grigini
             campiDiv.forEach(div => {
                 const inputChiave = div.querySelector('input[name^="key-"]');
                 if (!inputChiave) return;
@@ -422,12 +431,16 @@ function modificautente(utenteNoDettaglio, carta) {
                 }
             });
 
-            const nuoviDiv = input_form.querySelectorAll('div > .data-nuovo-chiave');
+            const nuoviDiv = input_form.querySelectorAll('.card.card-body .data-nuovo-chiave');
             nuoviDiv.forEach(inputChiave => {
-                const inputValore = inputChiave.nextElementSibling;
-                if (inputChiave.value.trim())
-                    bodyuno[inputChiave.value.trim()] = inputValore.value.trim();
+                let inputValore = null;
+                const cardBody = inputChiave.closest('.card-body');
+                if (cardBody) inputValore = cardBody.querySelector('.data-nuovo-valore');
+                const chiave = inputChiave.value.trim();
+                const valore = inputValore ? inputValore.value.trim() : "";
+                if (chiave) bodyuno[chiave] = valore;
             });
+
 
             fetch(urlBase + "/users" + `/${utente.name}`, {
                 method: 'PUT',
