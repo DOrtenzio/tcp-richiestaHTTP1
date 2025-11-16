@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Bot Telegram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #0088cc;
+            text-align: center;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #006699;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .response {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .emoji-btn {
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+    <div class="container">
+        <h1>Gestione Bot Telegram</h1>
+        
+        <div class="section">
+            <h2>getMe - Informazioni Bot</h2>
+            <p>Ottieni le informazioni del tuo bot</p>
+            <button id="getMeBtn">getMe</button>
+            <div id="getMeResponse" class="response"></div>
+        </div>
+        <!--sez messaggio normale e link-->
+        <div class="section">
+            <h2>sendMessage - Invia Messaggio</h2>
+            <p>Invia un messaggio a un utente specifico</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9;">
+            <h2>Opzioni di Formattazione Messaggi Bot Telegram</h2>
+            
+            <div style="margin-bottom: 20px; padding: 10px; background-color: #eaf3ff;">
+                <h3>Modalità MarkdownV2</h3>
+                <p>Per usare questa modalità, invia il campo <code>parse_mode: 'MarkdownV2'</code> nella richiesta <code>sendMessage</code>.</p>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Stile</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Sintassi</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Esempio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;"><b>Grassetto</b></td><td style="border: 1px solid #ddd; padding: 8px;"><code>*testo*</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>*Attenzione\!*</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;"><i>Corsivo</i></td><td style="border: 1px solid #ddd; padding: 8px;"><code>_testo_</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>_importante_</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">Codice</td><td style="border: 1px solid #ddd; padding: 8px;"><code>`codice`</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>`fetch()`</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">Link</td><td style="border: 1px solid #ddd; padding: 8px;"><code>[Testo](url)</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>[Google](https://google.com)</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 10px; background-color: #eafff0;">
+                <h3>Modalità HTML</h3>
+                <p>Per usare questa modalità, invia il campo <code>parse_mode: 'HTML'</code> nella richiesta <code>sendMessage</code>.</p>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Stile</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Tag</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Esempio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;"><b>Grassetto</b></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;b&gt;</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;b&gt;Attenzione!&lt;/b&gt;</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;"><i>Corsivo</i></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;i&gt;</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;i&gt;importante&lt;/i&gt;</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">Codice</td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;code&gt;</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;code&gt;fetch()&lt;/code&gt;</code></td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">Link</td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;a href=""&gt;</code></td><td style="border: 1px solid #ddd; padding: 8px;"><code>&lt;a href="https://g.com"&gt;Google&lt;/a&gt;</code></td></tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 10px;">Sostituire <code>&lt;</code> con <code>&amp;lt;</code>, <code>&gt;</code> con <code>&amp;gt;</code>, e <code>&amp;</code> con <code>&amp;amp;</code> se non fanno parte di un tag.</p>
+            </div>
+
+            <hr>
+            
+            <h3>Funzionalità Aggiuntive (Indipendenti dalla Formattazione)</h3>
+            
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f1e5d1;">
+                <h4>1. Custom Emoji (Solo con MarkdownV2 o HTML)</h4>
+                <p>Per inserire le <a href="https://core.telegram.org/bots/api#custom-emojientity" target="_blank"><strong>Custom Emoji</strong></a> (non le emoji standard) devi specificare l'ID dell'emoji, come mostrato nell'esempio:</p>
+                <p style="padding: 10px; background-color: #fff; border: 1px dashed #ccc;">
+                    <strong>MarkdownV2:</strong> <code>![](tg://emoji?id=5368324170671202286)</code><br>
+                    <strong>HTML:</strong> <code>&lt;tg-emoji emoji-id="5368324170671202286"&gt;😊&lt;/tg-emoji&gt;</code>
+                </p>
+                <p>Per usare le custom emoji bisogna acquistare domini, vedi docs-api.</p>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f1e5d1;">
+                <h4>2. Invio Link Interattivi (Tasti Inline)</h4>
+                <p>Se desideri inviare dei link che appaiano come pulsanti sotto il messaggio (<strong>Tasti Inline</strong>), devi usare il campo <code>reply_markup</code> e il formato <code>InlineKeyboardMarkup</code>. Questi non sono influenzati dal <code>parse_mode</code>.</p>
+                <p style="padding: 10px; background-color: #fff; border: 1px dashed #ccc;">
+                    <strong>Struttura:</strong> <code>{"inline_keyboard": [ [ {"text": "Visita il Sito", "url": "https://esempio.com"} ] ] }</code>
+                </p>
+            </div>
+
+        </div>
+
+            <label for="chatId">Chat ID:</label>
+            <input type="text" id="chatId" placeholder="Inserisci Chat ID" value="1873102249">
+            
+            <label for="messageText">Testo del messaggio:</label>
+            <textarea id="messageText" rows="3" placeholder="Inserisci il testo del messaggio"></textarea>
+
+            <label for="linkText">Link post-messaggio:</label>
+            <textarea id="linkText" rows="3" placeholder='[ #riga1 -> [{"text": "Visita il Sito", "url": "https://esempio.com"} ], #riga2 -> [{"text": "Uaneme", "url": "https://slengo.it/define/uanema"} ]] '></textarea>
+            
+            <div>
+                <p>Aggiungi emoji:</p>
+                <button class="emoji-btn" data-emoji="😊">😊</button>
+                <button class="emoji-btn" data-emoji="👍">👍</button>
+                <button class="emoji-btn" data-emoji="❤️">❤️</button>
+                <button class="emoji-btn" data-emoji="🎉">🎉</button>
+                <button class="emoji-btn" data-emoji="🔥">🔥</button>
+            </div>
+            
+            <div>
+                <label for="parseMode">Modalità di formattazione:</label>
+                <select id="parseMode">
+                    <option value="">Nessuna</option>
+                    <option value="HTML">HTML</option>
+                    <option value="Markdown">Markdown</option>
+                </select>
+            </div>
+            
+            <button id="sendMessageBtn">Invia Messaggio</button>
+            <button id="sendMessageLinkBtn">Invia Messaggio con Links</button>
+            <div id="sendMessageResponse" class="response"></div>
+        </div>
+        <!--sez documenti-->
+        <div class="section">
+            <h2>sendDocument - Invia Messaggio con Documento</h2>
+            <p>Invia un messaggio con allegato a un utente specifico</p>
+
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f1e5d1;">
+                <h4>Allegare Contenuti (Foto, Video, File)</h4>
+                <p>Per allegare foto, video, documenti, ecc., non si usa il campo <code>text</code> di <code>sendMessage</code>. Si usano metodi API dedicati (come <code>sendPhoto</code>, <code>sendVideo</code>, <code>sendDocument</code>) e il testo viene inviato tramite il campo <code>caption</code>:</p>
+                <p style="padding: 10px; background-color: #fff; border: 1px dashed #ccc;">
+                    <strong>Esempio:</strong> Usa <code>sendPhoto</code> e il tuo testo formattato va nel campo <code>caption</code>.
+                </p>
+            </div>
+            <div>
+                <label for="chatId2">Chat ID:</label>
+                <input type="text" id="chatId2" placeholder="Inserisci Chat ID" value="1873102249">
+                
+                <label for="messageText2">Testo del messaggio:</label>
+                <textarea id="messageText2" rows="3" placeholder="Inserisci il testo del messaggio"></textarea>
+
+                <label for="documentoFile">Carica il File:</label>
+                <input type="file" id="documentoFile" name="documentoFile" style="margin-bottom: 10px;">
+                
+                <button id="sendDocumentBtn">Invia</button>
+                <div id="sendDocumentResponse" class="response"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>getUpdates - Aggiornamenti</h2>
+            <p>Ottieni gli ultimi aggiornamenti dal bot</p>
+            <button id="getUpdatesBtn">getUpdates</button>
+            <div id="getUpdatesResponse" class="response"></div>
+        </div>
+        
+        <div class="section">
+            <h2>DB "Finto" Utenti</h2>
+            <p>Gestione tra utenti Telegram e database</p>
+            <div id="dbUser" class="response"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
