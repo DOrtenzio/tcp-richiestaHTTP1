@@ -59,52 +59,57 @@ setInterval(() => {
     }) .then(nuoviDati => {
         const ogg_appoggio=ottieniModifiche(nuoviDati);
         const modificati = ogg_appoggio.modificati;
+        console.log("Modificati: "+modificati);
         const cancellati = ogg_appoggio.cancellati;
-        if(modificati.length===0) return;
+        console.log("Cancellati: "+cancellati);
+        if(modificati.length===0 && cancellati.length===0) return;
         pulisciBordi();
-        for(const utenteModificato of modificati){
-            let nomeutente=utenteModificato.name;
-            const carta=document.querySelector(`[data-user="${nomeutente}"]`);
-            if(!carta){
-                    const temp = document.getElementById("template").content.cloneNode(true);
-                    const cloneCard = temp.querySelector('.card'); 
+        if(modificati){
+            for(const utenteModificato of modificati){
+                let nomeutente=utenteModificato.name;
+                const carta=document.querySelector(`[data-user="${nomeutente}"]`); //alt si può cercare con div > h5.card-title e poi foreach ma per me più comodo cosi
+                if(!carta){
+                        const temp = document.getElementById("template").content.cloneNode(true);
+                        const cloneCard = temp.querySelector('.card');
+                        cloneCard.classList.add('border-warning'); 
 
-                    cloneCard.querySelector(".card-title").textContent = utenteModificato.name;
-                    cloneCard.dataset.user = utenteModificato.name;
+                        cloneCard.querySelector(".card-title").textContent = utenteModificato.name;
+                        cloneCard.dataset.user = utenteModificato.name;
 
-                    cloneCard.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Schiaccia Dettagli";
-                    cloneCard.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
+                        cloneCard.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Schiaccia Dettagli";
+                        cloneCard.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
 
-                    const btnElimina = document.createElement("button");
-                    btnElimina.className = "btn btn-danger me-2";
-                    btnElimina.textContent = "Elimina Utente";
-                    btnElimina.onclick = () => {
-                        if (confirm(`Sei sicuro di voler eliminare l'utente ${utenteModificato.name}?`)) {
-                            eliminautente(utenteModificato.name);
-                        }
-                    };
-                    cloneCard.querySelector(".card-footer").appendChild(btnElimina);
+                        const btnElimina = document.createElement("button");
+                        btnElimina.className = "btn btn-danger me-2";
+                        btnElimina.textContent = "Elimina Utente";
+                        btnElimina.onclick = () => {
+                            if (confirm(`Sei sicuro di voler eliminare l'utente ${utenteModificato.name}?`)) {
+                                eliminautente(utenteModificato.name);
+                            }
+                        };
+                        cloneCard.querySelector(".card-footer").appendChild(btnElimina);
 
-                    const btnModifica = document.createElement("button");
-                    btnModifica.className = "btn btn-secondary me-2";
-                    btnModifica.textContent = "Modifica Utente";
-                    btnModifica.onclick = () => modificautente(utenteModificato,cloneCard);
-                    cloneCard.querySelector(".card-footer").appendChild(btnModifica);
+                        const btnModifica = document.createElement("button");
+                        btnModifica.className = "btn btn-secondary me-2";
+                        btnModifica.textContent = "Modifica Utente";
+                        btnModifica.onclick = () => modificautente(utenteModificato,cloneCard);
+                        cloneCard.querySelector(".card-footer").appendChild(btnModifica);
 
-                    const btnDettagli = document.createElement("button");
-                    btnDettagli.className = "btn btn-info";
-                    btnDettagli.textContent = "Dettagli Utente";
-                    btnDettagli.dataset.isdettagliata="false";
-                    btnDettagli.onclick = () => dettagliutente(utenteModificato.name);
-                    cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
+                        const btnDettagli = document.createElement("button");
+                        btnDettagli.className = "btn btn-info";
+                        btnDettagli.textContent = "Dettagli Utente";
+                        btnDettagli.dataset.isdettagliata="false";
+                        btnDettagli.onclick = () => dettagliutente(utenteModificato.name);
+                        cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
 
-                    document.getElementById("contenitore").appendChild(temp);
-            } else{
-                carta.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Non Presente";
-                carta.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
-                carta.dataset.isdettagliata='false';
-                carta.classList.add('border-warning');
-            } 
+                        document.getElementById("contenitore").appendChild(temp);
+                } else{
+                    carta.querySelector(".card-subtitle").textContent = utenteModificato.role ? `Ruolo: ${utenteModificato.role}` : "Ruolo: Non Presente";
+                    carta.querySelector(".card-text").textContent = `Età: ${utenteModificato.age}`;
+                    carta.dataset.isdettagliata='false';
+                    carta.classList.add('border-warning');
+                } 
+            }
         }
         if(cancellati){
             for(const utenteCancellato of cancellati){
@@ -122,7 +127,7 @@ setInterval(() => {
 }, 2000);
 
 function pulisciBordi(){
-    const carte=document.querySelectorAll('.card');
+    const carte=document.querySelectorAll('div.border-warning');
     carte.forEach(carta => {
         carta.classList.remove('border-warning');
     });
@@ -144,7 +149,18 @@ function ottieniConf(){
 function ottieniModifiche(nuovaConf) {
     let modificati = [];
     let rimossi = [];
-    const conf = sessionStorage.getItem('config') ? JSON.parse(sessionStorage.getItem('config')) : [];
+    const conf = ottieniConf();
+
+    for (const utVecchio of conf) {
+        let presente = false;
+        for (const nuovo of nuovaConf) {
+            if (nuovo.name === utVecchio.name) {
+                presente = true;
+                break;
+            }
+        }
+        if (!presente) rimossi.push(utVecchio);
+    }
 
     for (const utNuovo of nuovaConf) {
         let vecchio;
@@ -157,18 +173,9 @@ function ottieniModifiche(nuovaConf) {
         if (!vecchio) modificati.push(utNuovo);
         else if (!oggettiUguali(vecchio, utNuovo)) modificati.push(utNuovo);
     }
-
-    for (const utVecchio of conf) {
-        let presente = false;
-        for (const nuovo of nuovaConf) {
-            if (nuovo.name === utVecchio.name) {
-                presente = true;
-                break;
-            }
-        }
-        if (!presente) rimossi.push(utVecchio);
-    }
-    return { modificati, rimossi };
+    return { 
+        "modificati":modificati, 
+        "cancellati":rimossi };
 }
 
 function oggettiUguali(ogg1, ogg2) {
@@ -230,11 +237,12 @@ function eliminautente(nomeutente) {
     })
     .then(response => {
         if (!response.ok) {
-            alert("Errore nell'eliminazione dell'utente");
-            throw new Error("Errore nella risposta");
+            if (!response.ok) throw new Error("Errore nella risposta");
+            return response.json();
         }
         const carta = document.querySelector(`.card[data-user="${nomeutente}"]`);
         if (carta) carta.remove();
+        else throw new Error("Errore nella ricerca della carta");
     })
     .catch(error => console.error('Errore:', error));
 }
@@ -313,10 +321,41 @@ function modificautente(utenteNoDettaglio, carta) {
                                 <div class="col-2 d-flex justify-content-end">
                                     <button type="button" class="btn btn-sm btn-outline-danger">X</button>
                                 </div>
-                            `;
+                            `; //TODO: aggiungi bottone nuovo sottocampo
                             divSub.querySelector("button").onclick = () => divSub.remove();
                             div_contenitore.appendChild(divSub);
                         }
+                        
+                        const btnAddSub = document.createElement("button");
+                        btnAddSub.type = "button";
+                        btnAddSub.className = "btn btn-sm btn-outline-primary";
+                        btnAddSub.textContent = "Aggiungi sottocampo";
+
+                        btnAddSub.onclick = () => {
+                            const divSub = document.createElement("div");
+                            divSub.className = "row g-2 align-items-center mb-2";
+
+                            divSub.innerHTML = `
+                                <div class="col-5">
+                                    <input type="text" class="form-control form-control-sm"
+                                        name="subkey-${chiave}-nuovo-${Date.now()}"
+                                        placeholder="Sottochiave" required />
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" class="form-control form-control-sm"
+                                        name="subvalue-${chiave}-nuovo-${Date.now()}"
+                                        placeholder="Sottovalore" required />
+                                </div>
+                                <div class="col-2 d-flex justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger">X</button>
+                                </div>
+                            `;
+
+                            divSub.querySelector("button").onclick = () => divSub.remove();
+                            div_contenitore.insertBefore(divSub, btnAddSub);
+                        };
+
+                        div_contenitore.appendChild(btnAddSub);
                     } else {
                         const divValore = document.createElement("div");
                         divValore.className = "mb-2";
@@ -330,7 +369,7 @@ function modificautente(utenteNoDettaglio, carta) {
                     const divBtnRemove = document.createElement("div");
                     divBtnRemove.className = "mt-2";
                     divBtnRemove.innerHTML = `
-                        <button type="button" class="btn btn-sm btn-outline-danger">
+                        <button type="button" class="btn btn-sm btn-outline-danger w-100">
                             Rimuovi campo
                         </button>
                     `;
@@ -396,7 +435,7 @@ function modificautente(utenteNoDettaglio, carta) {
 
         carta.appendChild(templateform);
 
-        const input_form = carta.querySelector('[data-form_modifica="' + utente.name + '"]').querySelector('.spazio_input'); // salvataggio modifica
+        const input_form = carta.querySelector('[data-form_modifica="' + utente.name + '"]').querySelector('.spazio_input');
         const btnModificaForm = bottoni_spazio.querySelector('.button-form');
         btnModificaForm.onclick = () => {
             const bodyuno = {
@@ -405,36 +444,37 @@ function modificautente(utenteNoDettaglio, carta) {
                 role: input_form.querySelector('input[name="role-modifica"]').value.trim()
             };
 
-            const campiDiv = input_form.querySelectorAll('.card.card-body'); //ricavo tutti box grigini
+            const campiDiv = input_form.querySelectorAll('.card.card-body'); //recupero tutte le box grigie
             campiDiv.forEach(div => {
-                const inputChiave = div.querySelector('input[name^="key-"]');
+                const inputChiave = div.querySelector('input[name^="key-"]'); //recupero per ogni box l'input della chiave
                 if (!inputChiave) return;
 
                 const chiave = inputChiave.value.trim();
                 if (!chiave) return;
 
-                const subDivs = div.querySelectorAll(':scope > div');
+                const subDivs = div.querySelectorAll('div'); //recupero tutti i div figli dells box che contengono o il valore diretto o coppie sottochiave e sottovalore
                 if (subDivs.length > 0) {
                     bodyuno[chiave] = {};
                     subDivs.forEach(subDiv => {
-                        const subChiaveInput = subDiv.querySelector('input[name^="subkey-"]');
-                        const subValoreInput = subDiv.querySelector('input[name^="subvalue-"]');
-                        if (subChiaveInput && subValoreInput) {
-                            const subChiave = subChiaveInput.value.trim();
-                            const subValore = subValoreInput.value.trim();
-                            if (subChiave) bodyuno[chiave][subChiave] = subValore;
+                        const inputValore = div.querySelector('input[name^="data-"]'); //presente solo in caso di input diretto
+                        if (inputValore) bodyuno[chiave] = inputValore.value.trim();
+                        else { //gruppi sottochiave-sottovalore
+                            const subChiaveInput = subDiv.querySelector('input[name^="subkey-"]');
+                            const subValoreInput = subDiv.querySelector('input[name^="subvalue-"]');
+                            if (subChiaveInput && subValoreInput) {
+                                const subChiave = subChiaveInput.value.trim();
+                                const subValore = subValoreInput.value.trim();
+                                if (subChiave) bodyuno[chiave][subChiave] = subValore;
+                            }
                         }
                     });
-                } else {
-                    const inputValore = div.querySelector('input[name^="data-"]');
-                    if (inputValore) bodyuno[chiave] = inputValore.value.trim();
                 }
             });
 
-            const nuoviDiv = input_form.querySelectorAll('.card.card-body .data-nuovo-chiave');
+            const nuoviDiv = input_form.querySelectorAll('.card.card-body .data-nuovo-chiave'); //box con parametri nuovi (aggiunti con bottone)
             nuoviDiv.forEach(inputChiave => {
                 let inputValore = null;
-                const cardBody = inputChiave.closest('.card-body');
+                const cardBody = inputChiave.closest('.card-body'); //prendo la box padre
                 if (cardBody) inputValore = cardBody.querySelector('.data-nuovo-valore');
                 const chiave = inputChiave.value.trim();
                 const valore = inputValore ? inputValore.value.trim() : "";
