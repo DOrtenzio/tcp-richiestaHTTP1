@@ -1,17 +1,13 @@
 const urlBase = 'https://friendly-space-giggle-x5r5977xv7q426wqr-3000.app.github.dev/api';
 
 //Inserimento carte
-fetch(urlBase+"/users", {
-    headers: { 'accept': '*/*' }
-})
-.then(response => {
-    if (!response.ok) throw new Error("Errore nella risposta");
-    return response.json();
-})
-.then(data => {
-    if(ottieniConf().length===0) salvaConf(data);
+const datiSalvati = ottieniConf(); 
 
-    data.forEach(user => {
+if (datiSalvati && datiSalvati.length > 0) {
+    console.log("Dati caricati dalla configurazione salvata. Saltata la chiamata API ");
+
+    document.getElementById("contenitore").innerHTML = ''; 
+    datiSalvati.forEach(user => {
         const templ = document.getElementById("template").content.cloneNode(true);
         const cloneCard = templ.querySelector('.card'); 
 
@@ -46,8 +42,58 @@ fetch(urlBase+"/users", {
 
         document.getElementById("contenitore").appendChild(templ);
     });
-})
-.catch(error => console.error('Errore:', error));
+
+} else {
+    console.log("Dati non trovati. Esecuzione della chiamata API ");
+    fetch(urlBase+"/users", {
+        headers: { 'accept': '*/*' }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Errore nella risposta");
+        return response.json();
+    })
+    .then(data => {
+        salvaConf(data); 
+        document.getElementById("contenitore").innerHTML = ''; 
+
+        data.forEach(user => {
+            const templ = document.getElementById("template").content.cloneNode(true);
+            const cloneCard = templ.querySelector('.card'); 
+
+            cloneCard.querySelector(".card-title").textContent = user.name;
+            cloneCard.dataset.user = user.name;
+
+            cloneCard.querySelector(".card-subtitle").textContent = user.role ? `Ruolo: ${user.role}` : "Ruolo: Schiaccia Dettagli";
+            cloneCard.querySelector(".card-text").textContent = `Età: ${user.age}`;
+
+            const btnElimina = document.createElement("button");
+            btnElimina.className = "btn btn-danger me-2";
+            btnElimina.textContent = "Elimina Utente";
+            btnElimina.onclick = () => {
+                if (confirm(`Sei sicuro di voler eliminare l'utente ${user.name}?`)) {
+                    eliminautente(user.name);
+                }
+            };
+            cloneCard.querySelector(".card-footer").appendChild(btnElimina);
+
+            const btnModifica = document.createElement("button");
+            btnModifica.className = "btn btn-secondary me-2";
+            btnModifica.textContent = "Modifica Utente";
+            btnModifica.onclick = () => modificautente(user,cloneCard);
+            cloneCard.querySelector(".card-footer").appendChild(btnModifica);
+
+            const btnDettagli = document.createElement("button");
+            btnDettagli.className = "btn btn-info";
+            btnDettagli.textContent = "Dettagli Utente";
+            btnDettagli.dataset.isdettagliata="false";
+            btnDettagli.onclick = () => dettagliutente(user.name);
+            cloneCard.querySelector(".card-footer").appendChild(btnDettagli);
+
+            document.getElementById("contenitore").appendChild(templ);
+        });
+    })
+    .catch(error => console.error('Errore nel caricamento iniziale:', error));
+}
 //Aggiornamento
 setInterval(() => {
     fetch(urlBase+"/users", {
@@ -67,7 +113,7 @@ setInterval(() => {
         if(modificati){
             for(const utenteModificato of modificati){
                 let nomeutente=utenteModificato.name;
-                const carta=document.querySelector(`[data-user="${nomeutente}"]`); //alt si può cercare con div > h5.card-title e poi foreach ma per me più comodo cosi
+                const carta=document.querySelector(`[data-user="${nomeutente}"]`); 
                 if(!carta){
                         const temp = document.getElementById("template").content.cloneNode(true);
                         const cloneCard = temp.querySelector('.card');
@@ -321,7 +367,7 @@ function modificautente(utenteNoDettaglio, carta) {
                                 <div class="col-2 d-flex justify-content-end">
                                     <button type="button" class="btn btn-sm btn-outline-danger">X</button>
                                 </div>
-                            `; //TODO: aggiungi bottone nuovo sottocampo
+                            `;
                             divSub.querySelector("button").onclick = () => divSub.remove();
                             div_contenitore.appendChild(divSub);
                         }
